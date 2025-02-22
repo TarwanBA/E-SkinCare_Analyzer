@@ -66,10 +66,14 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 Prerequisites
 
 Sebelum memulai instalasi, pastikan Anda telah menginstal:
+Git: Download dan Install Git:
+Composer: Download dan Install Composer:
+Database (jika diperlukan, misalnya MySQL, PostgreSQL, MongoDB, dll.):
 
-Git: Download dan Install Git
-Composer: Download dan Install Composer
-Database (jika diperlukan, misalnya MySQL, PostgreSQL, MongoDB, dll.)
+Silhakan buat database dulu, dengan nama "e-skincare_analyzer":
+Import file databasenya, filenya ada di filder database:
+
+Selanjutnya jalankan perintah dibawah ini:
 
 Pertama:
 ```
