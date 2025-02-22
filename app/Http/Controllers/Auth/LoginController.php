@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -14,7 +16,7 @@ class LoginController extends Controller
         return view('frontend.login');
     }
 
-    // Proses login
+    // Proses login dengan cache
     public function login(Request $request)
     {
         // Validasi input
@@ -23,12 +25,16 @@ class LoginController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        // Cek login dengan Auth
-        if (Auth::attempt([
+        // Cek cache untuk pengguna berdasarkan email
+        $user = Cache::remember("user_{$request->email}", now()->addMinutes(10), function () use ($request) {
+            return User::where('email', $request->email)->first();
+        });
+
+        // Jika pengguna ditemukan dan password cocok
+        if ($user && Auth::attempt([
             'email' => $request->email,
             'password' => $request->password
         ], $request->remember)) {
-            // Jika login berhasil, redirect ke halaman dashboard atau halaman yang diinginkan
             return redirect()->intended('dashboard');
         }
 
