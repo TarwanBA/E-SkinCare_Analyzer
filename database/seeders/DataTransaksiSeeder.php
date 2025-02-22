@@ -16,7 +16,7 @@ class DataTransaksiSeeder extends Seeder
                 'nama_produk' => 'Moist Skintific, Cream Emina, Sunscreen Facetology',
             ],
             [
-                'tanggal_transaksi' => Carbon::createFromFormat('d/m/Y', '18/12/2023')->toDateString(),
+                'tanggal_transaksi' => Carbon::createFromFormat( 'd/m/Y', '18/12/2023')->toDateString(),
                 'nama_produk' => 'Moist Skintific, Cream Emina, Serum Garnier, Facial Wash Wardah',
             ],
             [
