@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Phpml\Association\Apriori;
+use Phpml\Association\Fgrowth;
 use App\Models\DataTransaksi;
 use App\Models\Dataproduk;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use App\Exports\HasilAnalisisExport;
+use App\Models\Fpgrowth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProsesController extends Controller
 {
@@ -28,9 +31,6 @@ class ProsesController extends Controller
     }
     
     
-    /**
-     * Fungsi untuk membuat paginate dari array.
-     */
     private function paginateArray(array $items, $perPage)
     {
         $page = request()->get('page', 1);
@@ -72,13 +72,16 @@ class ProsesController extends Controller
 
     public function hasil(){
 
-           
         // Hapus session agar pengguna harus memulai ulang proses setelah keluar
         session()->forget('status_proses');
 
         // Ambil Data Transaksi dan Produk dengan Paginate
         $datapagi = DataTransaksi::paginate(10);
         $produk = Dataproduk::paginate(10);
+        $fp = Fpgrowth::all();
+        $FpSupport = Fpgrowth::value('support');
+        $FpConfidance = Fpgrowth::value('confidance');
+
 
         // Mengirimkan data kosong untuk pengujian
             // $datapagi = new LengthAwarePaginator([], 0, 10);
@@ -94,16 +97,16 @@ class ProsesController extends Controller
             // })->toArray();
             
 
-        // Bangun Data Transaksi untuk Apriori
+        // Bangun Data Transaksi untuk Fgrowth
         $transactions = [];
         foreach (DataTransaksi::all() as $transaksi) {
             // Asumsikan `nama_produk` adalah string dengan produk yang dipisahkan oleh koma
             $transactions[] = explode(", ", $transaksi->nama_produk);
         }
     
-        // Jalankan Algoritma Apriori
-        $apriori = new Apriori(0.4, 0.6);
-        $apriori->train($transactions, []);
+        // Jalankan Algoritma Fgrowth
+        $fgrowth = new Fgrowth(0.4, 0.6);
+        $fgrowth->train($transactions, []);
     
         // Menghitung Frekuensi Kemunculan Item
         $itemCounts = [];
@@ -127,15 +130,15 @@ class ProsesController extends Controller
             //     $filteredTwoItemsetWithConfidencemin = [];
             //     $associationRules = [];
             // } else {
-            //     // Bangun Data Transaksi untuk Apriori
+            //     // Bangun Data Transaksi untuk fgrowth
             //     $transactions = [];
             //     foreach (DataTransaksi::all() as $transaksi) {
             //         $transactions[] = explode(", ", $transaksi->nama_produk);
             //     }
 
-            //     // Jalankan Algoritma Apriori
-            //     $apriori = new Apriori(0.4, 0.6);
-            //     $apriori->train($transactions, []);
+            //     // Jalankan Algoritma fgrowth
+            //     $fgrowth = new Fgrowth(0.4, 0.6);
+            //     $fgrowth->train($transactions, []);
 
             //     // Menghitung Frekuensi Kemunculan Item
             //     $itemCounts = [];
@@ -159,12 +162,14 @@ class ProsesController extends Controller
                 ];
             }
         }
+        
+        // dd($totalTransactions);
 
         //Hasil 1-Itemset memenuhi minimum support
         $Itemset1 = [];
         foreach ($itemCounts as $item => $count) {
             $support = ($count / $totalTransactions) * 100;
-            if ($support >= 2) {
+            if ($support >= $FpSupport) {
                 $Itemset1[$item] = [
                     'count' => $count,
                     'support' => number_format($support, 2) . '%'
@@ -202,7 +207,7 @@ class ProsesController extends Controller
         $filteredTwoItemset = [];
         foreach ($twoItemSets as $pair => $count) {
             $support = ($count / $totalTransactions) * 100;
-            if ($support >= 2) {
+            if ($support >= $FpSupport) {
                 $filteredTwoItemset[$pair] = [
                     'count' => $count,
                     'support' => number_format($support, 2) . '%'
@@ -222,22 +227,19 @@ class ProsesController extends Controller
             // Menghitung Support untuk item B
             $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
 
-            // Menghitung Support untuk A ∩ B (supportBoth adalah jumlah transaksi yang mengandung kedua item)
-            $supportBoth = ($data['count'] / $totalTransactions);
+            $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
+        
 
-            // Confidence untuk B → A (P(A|B))
-            $confidenceBA = ($supportBoth / $supportItem2) * 100; // Confidence B → A
+            $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100;
 
-            // Menyaring hanya yang memiliki confidence ≥ 60%
-            if ($confidenceBA >= 10) {
-                // Menyusun data pola 2-itemset, frekuensi B, frekuensi A & B, dan nilai confidence
+            // Menyaring hanya yang memiliki confidence
+            if ($confidenceAB >= 0) {
                 $filteredTwoItemsetWithConfidence[$pair] = [
                     'item1' => $item1, // Item A
                     'item2' => $item2, // Item B
-                    'frekuensi_item1' => $itemCounts[$item1] ?? 0, // Frekuensi item A
-                    'frekuensi_item2' => $itemCounts[$item2] ?? 0, // Frekuensi item B
-                    'frekuensi_item1_and_item2' => $data['count'], // Frekuensi item A & B
-                    'confidenceBA' => number_format($confidenceBA, 2) . '%' // Nilai Confidence B → A
+                    'frekuensi_A' => $itemCounts[$item1] ?? 0, 
+                    'frekuensi_A_&_B' => $data['count'], 
+                    'confidenceAB' => number_format($confidenceAB, 2) . '%' 
                 ];
             }
         }
@@ -245,38 +247,30 @@ class ProsesController extends Controller
         // Aturan Hasil Memenuhi Minimum Confidence
         $filteredTwoItemsetWithConfidencemin = [];
         foreach ($filteredTwoItemset as $pair => $data) {
+
             // Mengambil item dari pasangan
             $items = explode(", ", $pair);
             $item1 = $items[0];
             $item2 = $items[1];
+          
+            $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100; 
 
-            // Menghitung Support untuk item B
-            $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
-
-            // Menghitung Support untuk A ∩ B (supportBoth adalah jumlah transaksi yang mengandung kedua item)
-            $supportBoth = ($data['count'] / $totalTransactions);
-
-            // Confidence untuk B → A (P(A|B))
-            $confidenceBA = ($supportBoth / $supportItem2) * 100; // Confidence B → A
-
-            // Menyaring hanya yang memiliki confidence ≥ 60%
-            if ($confidenceBA >= 20) {
-                // Menyusun data pola 2-itemset, frekuensi B, frekuensi A & B, dan nilai confidence
+            // Menyaring hanya yang memiliki confidence ≥ 15%
+            if ($confidenceAB >= $FpConfidance) {
                 $filteredTwoItemsetWithConfidencemin[$pair] = [
                     'item1' => $item1, // Item A
                     'item2' => $item2, // Item B
-                    'frekuensi_item1' => $itemCounts[$item1] ?? 0, // Frekuensi item A
-                    'frekuensi_item2' => $itemCounts[$item2] ?? 0, // Frekuensi item B
-                    'frekuensi_item1_and_item2' => $data['count'], // Frekuensi item A & B
-                    'confidenceBA' => number_format($confidenceBA, 2) . '%' // Nilai Confidence B → A
+                    'frekuensi_A' => $itemCounts[$item1] ?? 0, 
+                    'frekuensi_A_&_B' => $data['count'], 
+                    'confidenceAB' => number_format($confidenceAB, 2) . '%' 
                 ];
             }
         }
 
-        // Aturan Hasil Memenuhi Minimum Confidence
+        // Hasil Aturan Asosiasi yang Terbentuk
         $associationRules = [];
         foreach ($filteredTwoItemset as $pair => $data) {
-            // Mengambil item dari pasangan
+
             $items = explode(", ", $pair);
             $item1 = $items[0];
             $item2 = $items[1];
@@ -284,39 +278,32 @@ class ProsesController extends Controller
              // Menghitung Confidence untuk A → B
             $supportItem1 = ($itemCounts[$item1] ?? 0) / $totalTransactions;
             $supportBoth = ($data['count'] / $totalTransactions);
-            $confidenceAB = ($supportBoth / $supportItem1) * 100; // Confidence A → B
+            $confidenceAB = ($supportBoth / $supportItem1) * 100; 
 
-            // Menghitung Confidence untuk B → A
-            $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
-            $confidenceBA = ($supportBoth / $supportItem2) * 100; // Confidence B → A
-
-            if ($confidenceAB >= 20 || $confidenceBA >= 20) {
+            if ($confidenceAB >= $FpConfidance || $confidenceAB >= $FpConfidance) {
                 $associationRules[] = [
                     'pair' => "$item1, $item2",
                     'support' => number_format(($data['count'] / $totalTransactions) * 100, 2) . '%', // Support A & B
-                    'confidence' => number_format($confidenceAB >= 20 ? $confidenceAB : $confidenceBA, 2) . '%'  // Menampilkan Confidence
+                    'confidence' => number_format($confidenceAB >= $FpConfidance ? $confidenceAB : $confidenceAB, 2) . '%'  // Menampilkan Confidence
                 ];
             }
         }
 
 
-    
-       // Hanya Ambil Produk dengan Support ≥ 20%
+       // Hanya Ambil Produk dengan Support ≥ 2%
         $filteredItemset = $this->filterHighSupportItems($itemCounts, $totalTransactions, 8);
 
-
         // Paginate hasil itemCounts
-        $calonitemset = $this->paginateArray($datacalonitemset, 5);
-        $itemsetone = $this->paginateArray($Itemset1, 5);
+        $calonitemset = $this->paginateArray($datacalonitemset, perPage: 2000);
+        $itemsetone = $this->paginateArray($Itemset1, 2000);
 
-        $itemsettwo = $this->paginateArray($Itemset2, 5);
+        $itemsettwo = $this->paginateArray($Itemset2, 2000);
 
-        $filteredItemsetPaginated = $this->paginateArray($filteredItemset, 10);
-        $twoItemSetsPaginated = $this->paginateArray($filteredTwoItemset, 10);
+        $filteredItemsetPaginated = $this->paginateArray($filteredItemset, 2000);
+        $twoItemSetsPaginated = $this->paginateArray($filteredTwoItemset, 2000);
     
 
         // dd(vars: $associationRules);
-
 
         // Kirim Data ke View
         return view('backend.hasil', compact('produk',
@@ -328,16 +315,11 @@ class ProsesController extends Controller
 
     public function analyzer()
     {
-        // Menetapkan status proses di session sebagai "berlangsung"
         session(['status_proses' => 'berlangsung']);
     
-        // Mulai proses analisis data
         $this->prosesData();
-    
-        // Setelah proses selesai, ubah status menjadi selesai
         session(['status_proses' => 'selesai']);
     
-        // Kembalikan respons sukses
         return response()->json([
             'status' => 'success',
             'message' => 'Proses selesai. Silakan lihat hasil.'
@@ -347,33 +329,28 @@ class ProsesController extends Controller
     
     private function prosesData()
     {
-        // Logika untuk analisis atau proses data Anda, seperti menjalankan algoritma
-        // Misalnya Apriori atau proses lainnya yang memakan waktu.
-        sleep(5); // Misalnya simulasi proses yang memakan waktu 5 detik
+        sleep(5); 
     }
 
 
     public function cetak()
     {
         // Ambil Data Transaksi dan Produk dengan Paginate
-        $datapagi = DataTransaksi::all();
-        $produk = Dataproduk::all();
+        $datapagi = DataTransaksi::paginate(10);
+        $produk = Dataproduk::paginate(10);  
+        $FpSupport = Fpgrowth::value('support');
+        $FpConfidance = Fpgrowth::value('confidance');          
 
-        // Pengujian aktifkan ini
-            // $datapagi = request()->has('test_empty') ? new LengthAwarePaginator([], 0, 10) : DataTransaksi::paginate(10);
-            // $produk = request()->has('test_empty') ? new LengthAwarePaginator([], 0, 10) : Dataproduk::paginate(10);
-
-    
-        // Bangun Data Transaksi untuk Apriori
+        // Bangun Data Transaksi untuk Fgrowth
         $transactions = [];
         foreach (DataTransaksi::all() as $transaksi) {
             // Asumsikan `nama_produk` adalah string dengan produk yang dipisahkan oleh koma
             $transactions[] = explode(", ", $transaksi->nama_produk);
         }
     
-        // Jalankan Algoritma Apriori
-        $apriori = new Apriori(0.4, 0.6);
-        $apriori->train($transactions, []);
+        // Jalankan Algoritma Fgrowth
+        $fgrowth = new Fgrowth(0.4, 0.6);
+        $fgrowth->train($transactions, []);
     
         // Menghitung Frekuensi Kemunculan Item
         $itemCounts = [];
@@ -384,7 +361,7 @@ class ProsesController extends Controller
             }
         }
 
-     
+
         // Daftar produk Calon Itemset
         $datacalonitemset = [];
         foreach ($itemCounts as $item => $count) {
@@ -396,12 +373,14 @@ class ProsesController extends Controller
                 ];
             }
         }
+        
+        // dd($totalTransactions);
 
         //Hasil 1-Itemset memenuhi minimum support
         $Itemset1 = [];
         foreach ($itemCounts as $item => $count) {
             $support = ($count / $totalTransactions) * 100;
-            if ($support >= 10) {
+            if ($support >= $FpSupport) {
                 $Itemset1[$item] = [
                     'count' => $count,
                     'support' => number_format($support, 2) . '%'
@@ -439,7 +418,7 @@ class ProsesController extends Controller
         $filteredTwoItemset = [];
         foreach ($twoItemSets as $pair => $count) {
             $support = ($count / $totalTransactions) * 100;
-            if ($support >= 2) {
+            if ($support >= $FpSupport) {
                 $filteredTwoItemset[$pair] = [
                     'count' => $count,
                     'support' => number_format($support, 2) . '%'
@@ -459,22 +438,19 @@ class ProsesController extends Controller
             // Menghitung Support untuk item B
             $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
 
-            // Menghitung Support untuk A ∩ B (supportBoth adalah jumlah transaksi yang mengandung kedua item)
-            $supportBoth = ($data['count'] / $totalTransactions);
+            $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
+        
 
-            // Confidence untuk B → A (P(A|B))
-            $confidenceBA = ($supportBoth / $supportItem2) * 100; // Confidence B → A
+            $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100;
 
-            // Menyaring hanya yang memiliki confidence ≥ 60%
-            if ($confidenceBA >= 10) {
-                // Menyusun data pola 2-itemset, frekuensi B, frekuensi A & B, dan nilai confidence
+            // Menyaring hanya yang memiliki confidence
+            if ($confidenceAB >= 0) {
                 $filteredTwoItemsetWithConfidence[$pair] = [
                     'item1' => $item1, // Item A
                     'item2' => $item2, // Item B
-                    'frekuensi_item1' => $itemCounts[$item1] ?? 0, // Frekuensi item A
-                    'frekuensi_item2' => $itemCounts[$item2] ?? 0, // Frekuensi item B
-                    'frekuensi_item1_and_item2' => $data['count'], // Frekuensi item A & B
-                    'confidenceBA' => number_format($confidenceBA, 2) . '%' // Nilai Confidence B → A
+                    'frekuensi_A' => $itemCounts[$item1] ?? 0, 
+                    'frekuensi_A_&_B' => $data['count'], 
+                    'confidenceAB' => number_format($confidenceAB, 2) . '%' 
                 ];
             }
         }
@@ -482,38 +458,30 @@ class ProsesController extends Controller
         // Aturan Hasil Memenuhi Minimum Confidence
         $filteredTwoItemsetWithConfidencemin = [];
         foreach ($filteredTwoItemset as $pair => $data) {
+
             // Mengambil item dari pasangan
             $items = explode(", ", $pair);
             $item1 = $items[0];
             $item2 = $items[1];
+          
+            $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100; 
 
-            // Menghitung Support untuk item B
-            $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
-
-            // Menghitung Support untuk A ∩ B (supportBoth adalah jumlah transaksi yang mengandung kedua item)
-            $supportBoth = ($data['count'] / $totalTransactions);
-
-            // Confidence untuk B → A (P(A|B))
-            $confidenceBA = ($supportBoth / $supportItem2) * 100; // Confidence B → A
-
-            // Menyaring hanya yang memiliki confidence ≥ 60%
-            if ($confidenceBA >= 20) {
-                // Menyusun data pola 2-itemset, frekuensi B, frekuensi A & B, dan nilai confidence
+            // Menyaring hanya yang memiliki confidence ≥ 15%
+            if ($confidenceAB >= $FpConfidance) {
                 $filteredTwoItemsetWithConfidencemin[$pair] = [
                     'item1' => $item1, // Item A
                     'item2' => $item2, // Item B
-                    'frekuensi_item1' => $itemCounts[$item1] ?? 0, // Frekuensi item A
-                    'frekuensi_item2' => $itemCounts[$item2] ?? 0, // Frekuensi item B
-                    'frekuensi_item1_and_item2' => $data['count'], // Frekuensi item A & B
-                    'confidenceBA' => number_format($confidenceBA, 2) . '%' // Nilai Confidence B → A
+                    'frekuensi_A' => $itemCounts[$item1] ?? 0, 
+                    'frekuensi_A_&_B' => $data['count'], 
+                    'confidenceAB' => number_format($confidenceAB, 2) . '%' 
                 ];
             }
         }
 
-        // Aturan Hasil Memenuhi Minimum Confidence
+        // Hasil Aturan Asosiasi yang Terbentuk
         $associationRules = [];
         foreach ($filteredTwoItemset as $pair => $data) {
-            // Mengambil item dari pasangan
+
             $items = explode(", ", $pair);
             $item1 = $items[0];
             $item2 = $items[1];
@@ -521,34 +489,29 @@ class ProsesController extends Controller
              // Menghitung Confidence untuk A → B
             $supportItem1 = ($itemCounts[$item1] ?? 0) / $totalTransactions;
             $supportBoth = ($data['count'] / $totalTransactions);
-            $confidenceAB = ($supportBoth / $supportItem1) * 100; // Confidence A → B
+            $confidenceAB = ($supportBoth / $supportItem1) * 100; 
 
-            // Menghitung Confidence untuk B → A
-            $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
-            $confidenceBA = ($supportBoth / $supportItem2) * 100; // Confidence B → A
-
-            if ($confidenceAB >= 20 || $confidenceBA >= 20) {
+            if ($confidenceAB >= $FpConfidance || $confidenceAB >= $FpConfidance) {
                 $associationRules[] = [
                     'pair' => "$item1, $item2",
                     'support' => number_format(($data['count'] / $totalTransactions) * 100, 2) . '%', // Support A & B
-                    'confidence' => number_format($confidenceAB >= 20 ? $confidenceAB : $confidenceBA, 2) . '%'  // Menampilkan Confidence
+                    'confidence' => number_format($confidenceAB >= $FpConfidance ? $confidenceAB : $confidenceAB, 2) . '%'  // Menampilkan Confidence
                 ];
             }
         }
 
-    
-       // Hanya Ambil Produk dengan Support ≥ 20%
+
+       // Hanya Ambil Produk dengan Support ≥ 2%
         $filteredItemset = $this->filterHighSupportItems($itemCounts, $totalTransactions, 8);
 
-
         // Paginate hasil itemCounts
-        $calonitemset = $this->paginateArray($datacalonitemset, 500);
-        $itemsetone = $this->paginateArray($Itemset1, 500);
+        $calonitemset = $this->paginateArray($datacalonitemset, perPage: 200);
+        $itemsetone = $this->paginateArray($Itemset1, 200);
 
-        $itemsettwo = $this->paginateArray($Itemset2, 500);
+        $itemsettwo = $this->paginateArray($Itemset2, 2800);
 
-        $filteredItemsetPaginated = $this->paginateArray($filteredItemset, 500);
-        $twoItemSetsPaginated = $this->paginateArray($filteredTwoItemset, 500);
+        $filteredItemsetPaginated = $this->paginateArray($filteredItemset, 200);
+        $twoItemSetsPaginated = $this->paginateArray($filteredTwoItemset, 200);
     
 
         // dd(vars: $associationRules);
@@ -563,6 +526,216 @@ class ProsesController extends Controller
         return $pdf->stream('laporan-data-hasil-analisis.pdf');
 
     }
+
+
+public function exportExcel()
+{
+     // Ambil Data Transaksi dan Produk dengan Paginate
+     $datapagi = DataTransaksi::paginate(10);
+     $produk = Dataproduk::paginate(10);  
+     $FpSupport = Fpgrowth::value('support');
+     $FpConfidance = Fpgrowth::value('confidance');          
+
+     // Bangun Data Transaksi untuk Fgrowth
+     $transactions = [];
+     foreach (DataTransaksi::all() as $transaksi) {
+         // Asumsikan `nama_produk` adalah string dengan produk yang dipisahkan oleh koma
+         $transactions[] = explode(", ", $transaksi->nama_produk);
+     }
+ 
+     // Jalankan Algoritma Fgrowth
+     $fgrowth = new Fgrowth(0.4, 0.6);
+     $fgrowth->train($transactions, []);
+ 
+     // Menghitung Frekuensi Kemunculan Item
+     $itemCounts = [];
+     $totalTransactions = count($transactions);
+     foreach ($transactions as $items) {
+         foreach ($items as $item) {
+             $itemCounts[$item] = ($itemCounts[$item] ?? 0) + 1;
+         }
+     }
+
+
+     // Daftar produk Calon Itemset
+    $datacalonitemset = [];
+    foreach ($itemCounts as $item => $count) {
+        $support = ($count / $totalTransactions) * 100;
+
+        if ($support >= 0) {
+            $datacalonitemset[$item] = [
+                'item'    => $item,
+                'count'   => $count,
+                'support' => number_format($support, 2) . '%'
+            ];
+        }
+    }
+
+     // dd($totalTransactions);
+
+     //Hasil 1-Itemset memenuhi minimum support
+     $Itemset1 = [];
+     foreach ($itemCounts as $item => $count) {
+         $support = ($count / $totalTransactions) * 100;
+         if ($support >= $FpSupport) {
+             $Itemset1[$item] = [
+                 'item'    => $item,
+                 'count' => $count,
+                 'support' => number_format($support, 2) . '%'
+             ];
+         }
+     }
+
+     
+     //Tidak terpakai
+     $twoItemSets = [];
+     foreach ($transactions as $items) {
+         // Buat kombinasi 2-itemset untuk setiap transaksi
+         $combinations = $this->getCombinations($items, 2);
+         foreach ($combinations as $combination) {
+             $pair = implode(", ", $combination);
+             $twoItemSets[$pair] = ($twoItemSets[$pair] ?? 0) + 1;
+         }
+     }
+     //___________________________
+
+     
+     // Daftar produk Calon 2-Itemset
+     $Itemset2 = [];
+     foreach ($twoItemSets as $pair => $count) {
+         $support = ($count / $totalTransactions) * 100;
+         if ($support >= 0) {
+             $Itemset2[$pair] = [
+                 'pair'    => $pair,
+                 'count' => $count,
+                 'support' => number_format($support, 2) . '%'
+             ];
+         }
+     }
+
+     // Hasil 2-Itemset Memenuhi Minimum Support
+     $HasilItemset2 = [];
+     foreach ($twoItemSets as $pair => $count) {
+         $support = ($count / $totalTransactions) * 100;
+         if ($support >= $FpSupport) {
+             $HasilItemset2[$pair] = [
+                 'pair'    => $pair,
+                 'count' => $count,
+                 'support' => number_format($support, 2) . '%'
+             ];
+         }
+     }
+
+     // Hasil 2-Itemset Memenuhi Minimum Support
+    //  $filteredTwoItemset = [];
+    //  foreach ($twoItemSets as $pair => $count) {
+    //      $support = ($count / $totalTransactions) * 100;
+    //      if ($support >= $FpSupport) {
+    //          $filteredTwoItemset[$pair] = [
+    //              'pair'    => $pair,
+    //              'count' => $count,
+    //              'support' => number_format($support, 2) . '%'
+    //          ];
+    //      }
+    //  }
+
+
+     // Hasil Confidence
+     $filteredTwoItemsetWithConfidence = [];
+     foreach ($HasilItemset2 as $pair => $data) {
+         // Mengambil item dari pasangan
+         $items = explode(", ", $pair);
+         $item1 = $items[0];
+         $item2 = $items[1];
+
+         // Menghitung Support untuk item B    
+
+         $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100;
+
+         // Menyaring hanya yang memiliki confidence
+         if ($confidenceAB >= 0) {
+            $filteredTwoItemsetWithConfidence[$pair] = [
+                'item_pair' => $item1 . ',' . $item2,
+                'frekuensi_A' => $itemCounts[$item1] ?? 0, 
+                'frekuensi_A_&_B' => $data['count'], 
+                'confidenceAB' => number_format($confidenceAB, 2) . '%' 
+            ];
+        }
+        
+     }
+
+     // Aturan Hasil Memenuhi Minimum Confidence
+     $filteredTwoItemsetWithConfidencemin = [];
+     foreach ($HasilItemset2 as $pair => $data) {
+
+         // Mengambil item dari pasangan
+         $items = explode(", ", $pair);
+         $item1 = $items[0];
+         $item2 = $items[1];
+       
+         $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100; 
+
+         // Menyaring hanya yang memiliki confidence ≥ 15%
+         if ($confidenceAB >= $FpConfidance) {
+             $filteredTwoItemsetWithConfidencemin[$pair] = [
+                 'item_pair' => $item1 . ',' . $item2,
+                 'frekuensi_A' => $itemCounts[$item1] ?? 0, 
+                 'frekuensi_A_&_B' => $data['count'], 
+                 'confidenceAB' => number_format($confidenceAB, 2) . '%' 
+             ];
+         }
+     }
+
+     // Hasil Aturan Asosiasi yang Terbentuk
+     $associationRules = [];
+     foreach ($HasilItemset2 as $pair => $data) {
+
+         $items = explode(", ", $pair);
+         $item1 = $items[0];
+         $item2 = $items[1];
+
+          // Menghitung Confidence untuk A → B
+         $supportItem1 = ($itemCounts[$item1] ?? 0) / $totalTransactions;
+         $supportBoth = ($data['count'] / $totalTransactions);
+         $confidenceAB = ($supportBoth / $supportItem1) * 100; 
+
+         if ($confidenceAB >= $FpConfidance || $confidenceAB >= $FpConfidance) {
+             $associationRules[] = [
+                 'pair' => "$item1, $item2",
+                 'support' => number_format(($data['count'] / $totalTransactions) * 100, 2) . '%', // Support A & B
+                 'confidence' => number_format($confidenceAB >= $FpConfidance ? $confidenceAB : $confidenceAB, 2) . '%'  // Menampilkan Confidence
+             ];
+         }
+     }
+
+
+    // Hanya Ambil Produk dengan Support ≥ 2%
+     $filteredItemsetPaginated = $this->filterHighSupportItems($itemCounts, $totalTransactions, 8);
+
+    
+     $calonitemset = $datacalonitemset;
+     $Hasilitemsetone = $Itemset1;
+     $calonitemsettwo = $Itemset2;
+
+     $hasil2itemset = $HasilItemset2;
+ 
+
+     // dd(vars: $associationRules);
+
+    return Excel::download(new HasilAnalisisExport(
+        $calonitemset ,
+        $Hasilitemsetone, 
+        $calonitemsettwo, 
+        $HasilItemset2, 
+
+    $filteredItemsetPaginated, 
+    $filteredTwoItemsetWithConfidence, 
+    $filteredTwoItemsetWithConfidencemin, 
+    $associationRules
+), 'laporan-hasil-analisis.xlsx');
+
+}
+
     
 
 

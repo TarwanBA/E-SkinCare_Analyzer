@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DataprodukController;
 use App\Http\Controllers\DatatransaksiController;
+use App\Http\Controllers\FpgrowthController;
 use App\Http\Controllers\ProsesController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\CekProsesSelesai;
@@ -43,7 +44,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/analyzer', [ProsesController::class, 'analyzer'])->name('proses.analyzer');
     Route::get('/hasil-proses', [ProsesController::class, 'hasil'])->name('hasil.proses')->middleware(CekProsesSelesai::class);
-    Route::get('/cetak', [ProsesController::class, 'cetak'])->name('cetak.hasil');
+    Route::get('/cetak', [ProsesController::class, 'exportExcel'])->name('cetak.hasil');
+
+    Route::get('/setting-fp', [FpgrowthController::class, 'index'])->name('fp.index');
+    Route::put('/setting-fp{id}', [FpgrowthController::class, 'update'])->name('fp.update');
 
 });
 

@@ -94,6 +94,12 @@
             </li>
             <li class="nav-item nav-category">Master Data</li>
             <li class="nav-item">
+              <a class="nav-link" href="{{route('fp.index')}}">
+                <i class="menu-icon mdi mdi-cog"></i>
+                <span class="menu-title">Metode Fp-Growth</span>                
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="{{route('data-produk.index')}}">
                 <i class="menu-icon mdi mdi-cube-outline"></i>
                 <span class="menu-title">Data Produk</span>                

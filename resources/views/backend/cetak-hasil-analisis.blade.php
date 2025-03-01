@@ -59,7 +59,7 @@
 
     <div class="line"></div>
 
-    <div class="table-title">Hasil 1-Itemset memenuhi minimum support</div>
+    <div class="table-title">Hasil 1-Itemset memenuhi minimum support 2%</div>
     <table>
         <thead>
             <tr>
@@ -103,7 +103,7 @@
 
         <div class="line"></div>
 
-    <div class="table-title">Hasil 2-Itemset Memenuhi Minimum Support</div>
+    <div class="table-title">Hasil 2-Itemset Memenuhi Minimum Support 2%</div>
     <table>
         <thead>
             <tr>
@@ -145,9 +145,9 @@
                 <tr>
                     <td>{{ $no++ }}</td>
                     <td>{{ $pair }}</td>
-                    <td>{{ $set['frekuensi_item1'] }}</td>  <!-- Menampilkan Frekuensi A -->
-                    <td>{{ $set['frekuensi_item1_and_item2'] }}</td>  <!-- Menampilkan Frekuensi A & B -->
-                    <td>{{ $set['confidenceBA'] }}</td>  <!-- Menampilkan Confidence B → A -->
+                    <td>{{ $set['frekuensi_A'] }}</td>
+                    <td>{{ $set['frekuensi_A_&_B'] }}</td> 
+                    <td>{{ $set['confidenceAB'] }}</td> 
                 </tr>
                 @endforeach
             </tbody>
@@ -172,9 +172,9 @@
                 <tr>
                     <td>{{ $no++ }}</td>
                     <td>{{ $pair }}</td>
-                    <td>{{ $set['frekuensi_item1'] }}</td>  <!-- Menampilkan Frekuensi A -->
-                    <td>{{ $set['frekuensi_item1_and_item2'] }}</td>  <!-- Menampilkan Frekuensi A & B -->
-                    <td>{{ $set['confidenceBA'] }}</td>  <!-- Menampilkan Confidence B → A -->
+                    <td>{{ $set['frekuensi_A'] }}</td>
+                    <td>{{ $set['frekuensi_A_&_B'] }}</td> 
+                    <td>{{ $set['confidenceAB'] }}</td> 
                 </tr>
                 @endforeach
             </tbody>

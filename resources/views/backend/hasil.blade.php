@@ -59,8 +59,8 @@
 
         <h4 class="card-title" data-aos="fade-up" data-aos-duration="4000">Hasil 1-Itemset memenuhi minimum support</h4>
         <p data-aos="fade-up" data-aos-duration="4000"> Item-item dengan nilai support yang dimilikinya
-            dengan menetapkan minimum support 10% maka item-item yang memiliki nilai support
-            kurang dari 10% dihilangkan.</p>
+            dengan menetapkan minimum support sebesar 2% maka item-item yang memiliki nilai support
+            kurang dari 2% dihilangkan.</p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="4000">
           <table class="table">
             <thead>
@@ -155,7 +155,7 @@
 
 
         <h4 class="card-title" data-aos="fade-up" data-aos-duration="7000">Hasil Confidence</h4>
-        <p data-aos="fade-up" data-aos-duration="7000"> confidence dengan aturan minimum confidence 60%
+        <p data-aos="fade-up" data-aos-duration="7000"> confidence dengan aturan minimum confidence 15%
             ditentukan dari setiap kombinasi item </p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="7000">
           <table class="table">
@@ -174,9 +174,9 @@
                 <tr>
                     <td>{{ $no++ }}</td>
                     <td>{{ $pair }}</td>
-                    <td>{{ $set['frekuensi_item1'] }}</td>  <!-- Menampilkan Frekuensi A -->
-                    <td>{{ $set['frekuensi_item1_and_item2'] }}</td>  <!-- Menampilkan Frekuensi A & B -->
-                    <td>{{ $set['confidenceBA'] }}</td>  <!-- Menampilkan Confidence B → A -->
+                     <td>{{ $set['frekuensi_A'] }}</td>
+                    <td>{{ $set['frekuensi_A_&_B'] }}</td> 
+                    <td>{{ $set['confidenceAB'] }}</td> 
                 </tr>
                 @endforeach
             </tbody>
@@ -187,7 +187,6 @@
                 {{ $filteredTwoItemsetWithConfidence->links('pagination::bootstrap-4') }}
             </div> --}}
             
-
         </div>
 
         <br><br>
@@ -195,7 +194,7 @@
 
         <h4 class="card-title" data-aos="fade-up" data-aos-duration="8000">Aturan Hasil Memenuhi Minimum Confidence</h4>
         <p data-aos="fade-up" data-aos-duration="8000"> Dengan nilai confidence yang didapat, kemudian dihilangkan nilai confidence yang
-            tidak memenuhi ketentuan kurang dari confidence 60% yaitu sebagai berikut: </p>
+            tidak memenuhi ketentuan kurang dari confidence 15% yaitu sebagai berikut: </p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="8000">
           <table class="table">
             <thead>
@@ -213,9 +212,9 @@
                 <tr>
                     <td>{{ $no++ }}</td>
                     <td>{{ $pair }}</td>
-                    <td>{{ $set['frekuensi_item1'] }}</td>  <!-- Menampilkan Frekuensi A -->
-                    <td>{{ $set['frekuensi_item1_and_item2'] }}</td>  <!-- Menampilkan Frekuensi A & B -->
-                    <td>{{ $set['confidenceBA'] }}</td>  <!-- Menampilkan Confidence B → A -->
+                    <td>{{ $set['frekuensi_A'] }}</td>  
+                    <td>{{ $set['frekuensi_A_&_B'] }}</td> 
+                    <td>{{ $set['confidenceAB'] }}</td> 
                 </tr>
                 @endforeach
             </tbody>
@@ -234,7 +233,7 @@
 
         <h4 class="card-title" data-aos="fade-up" data-aos-duration="9000">Aturan Asosiasi yang Terbentuk</h4>
         <p data-aos="fade-up" data-aos-duration="9000"> Pola kombinasi 2-Itemset,
-            dengan ketentuan minimum support 20% dan minimum confidence 60% maka aturan
+            dengan ketentuan minimum support 2% dan minimum confidence 15% maka aturan
             asosiasi yang terbentuk </p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="9000">
           <table class="table">
@@ -253,7 +252,7 @@
                     <tr>
                         <td>{{ $no++ }}</td>
                         <td>{{ $rule['pair'] }}</td>
-                        <td>{{ $rule['pair'] }}</td>  <!-- Aturan ditampilkan lagi sebagai pasangan -->
+                        <td>{{ $rule['pair'] }}</td> 
                         <td>{{ $rule['support'] }}</td>
                         <td>{{ $rule['confidence'] }}</td>
                     </tr>
@@ -263,16 +262,12 @@
             
             <!-- Tambahkan Pagination -->
             {{-- <div class="d-flex justify-content-center">
-                {{ $filteredTwoItemsetWithConfidencemin->links('pagination::bootstrap-4') }}
+                {{ $associationRules->links('pagination::bootstrap-4') }}
             </div> --}}
-            
 
         </div>
     </div>
 </div>
-
-
-
 
   @include('komponen.footer')
 
