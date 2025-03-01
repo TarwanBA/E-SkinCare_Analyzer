@@ -23,6 +23,9 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- endinject -->
     <link rel="shortcut icon" href="assets/images/logo-Umi.ico" />
+    <!-- CSS untuk Animasi Konfeti -->
+
+
   </head>
   <body class="with-welcome-text">
     <div class="container-scroller">
@@ -46,8 +49,8 @@
         <div class="navbar-menu-wrapper d-flex align-items-top">
           <ul class="navbar-nav">
             <li class="nav-item fw-semibold d-none d-lg-block ms-0">
-              <h1 class="welcome-text">Selamat Datang... <span class="text-black fw-bold">{{ Auth::user()->name }}</span></h1>
-              <h3 class="welcome-sub-text"> </h3>
+              {{-- <h1 class="welcome-text">Selamat Datang... <span class="text-black fw-bold">{{ Auth::user()->name }}</span></h1>
+              <h3 class="welcome-sub-text"> </h3> --}}
             </li>
             @if(session('error'))
     <div class="alert alert-danger">
@@ -94,12 +97,6 @@
             </li>
             <li class="nav-item nav-category">Master Data</li>
             <li class="nav-item">
-              <a class="nav-link" href="{{route('fp.index')}}">
-                <i class="menu-icon mdi mdi-cog"></i>
-                <span class="menu-title">Metode Fp-Growth</span>                
-              </a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link" href="{{route('data-produk.index')}}">
                 <i class="menu-icon mdi mdi-cube-outline"></i>
                 <span class="menu-title">Data Produk</span>                
@@ -123,12 +120,18 @@
                     <span class="menu-title">Data Hasil</span>                    
                 </a>
             </li>
-            {{-- <li class="nav-item">
-            <a class="nav-link" href="">
-                <i class="menu-icon mdi mdi-file-document"></i>
-                <span class="menu-title">Dokumentasi</span>
-            </a>
-            </li> --}}
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+                <i class="menu-icon mdi mdi-cog"></i>
+                <span class="menu-title">Pengaturan</span>
+                <i class="menu-arrow"></i>
+              </a>
+              <div class="collapse" id="ui-basic">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item"> <a class="nav-link" href="{{route('fp.index')}}">Metode Fp-Growth</a></li>
+                </ul>
+              </div>
+            </li>
           </ul>
         </nav>
         <!-- partial -->

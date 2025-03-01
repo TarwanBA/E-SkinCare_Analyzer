@@ -25,51 +25,18 @@
 <div class="col-lg-12 grid-margin stretch-card mt-3">
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title">Daftar Data Produk</h4>
-        <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Kode Produk</th>
-                            <th>Nama Produk</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($produk as $data)
-                            <tr>
-                                <td>{{ $loop->iteration + ($produk->currentPage() - 1) * $produk->perPage() }}</td>
-                                <td>{{ $data->kode_produk }}</td>
-                                <td>{{ $data->nama_produk }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            
-                <!-- Pagination -->
-                <div class="d-flex justify-content-center">
-                    {{ $produk->links('pagination::bootstrap-4') }}
-                </div>            
-        </div>
-      </div>
-    </div>
-  </div>
-
-<div class="col-lg-12 grid-margin stretch-card mt-3">
-    <div class="card">
-      <div class="card-body">
         <h4 class="card-title">Daftar Data Transaksi</h4>
         <div class="table-responsive">
           <table class="table">
             <thead>
               <tr>
                 <th>No</th>
-                <th>Tanggal</th>
-                <th>Produk</th>
+                <th>Tanggal Transaksi</th>
+                <th>Nama Produk</th>
               </tr>
             </thead>
             <tbody>
-                @foreach($datapagi as $data)
+                @foreach($datatransaksi as $data)
                     <tr>
                         <td>{{ $loop->iteration }}</td> 
                         <td>{{ $data->tanggal_transaksi }}</td> 
@@ -80,9 +47,9 @@
             
           </table>
             <!-- Pagination -->
-            <div class="d-flex justify-content-center">
+            {{-- <div class="d-flex justify-content-center">
                 {{ $datapagi->links('pagination::bootstrap-4') }}
-            </div>   
+            </div>    --}}
         </div>
       </div>
     </div>

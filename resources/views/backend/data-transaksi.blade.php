@@ -33,6 +33,9 @@
       </div>
     </div>
   </div>
+  <h5 style="text-align: center;" class="mt-3">
+    Berikut ini merupakan data transaksi produk skincare Ternate Kosmetik
+  </h5>
 <div class="col-lg-12 grid-margin stretch-card mt-3">
     <div class="card">
       <div class="card-body">

@@ -28,10 +28,11 @@
         </div>
       </div>
   </div>
+
 <div class="col-lg-12 grid-margin stretch-card mt-3">
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title">Data Nilai Support & Confidance</h4>
+        <h4 class="card-title">Pengaturan Nilai Support & Confidance</h4>
         <div class="table-responsive">
                 <!-- Form Pencarian -->
                 <!-- Form Pencarian -->
@@ -78,6 +79,12 @@
       </div>
     </div>
   </div>
+  <p style="text-align: justify;">
+    Dengan mengatur nilai minimum support dan confidence dalam analisis aturan asosiasi menggunakan metode FP-Growth. Minimum support menentukan seberapa sering suatu kombinasi produk muncul dalam transaksi agar dianggap sebagai aturan yang valid, sementara minimum confidence mengukur seberapa kuat hubungan antara produk dalam aturan tersebut. Jika nilai support tinggi, hanya kombinasi produk yang sering muncul yang dianalisis, sedangkan nilai rendah memungkinkan lebih banyak pola ditemukan. Begitu juga dengan confidence, nilai tinggi memastikan hanya aturan dengan hubungan kuat yang dipertahankan, sementara nilai rendah bisa menghasilkan lebih banyak aturan, termasuk yang hubungannya lemah. 
+    <br>
+    <br>
+    Misalnya, jika minimum support ditetapkan 2%, hanya kombinasi produk yang muncul di minimal 2% dari total transaksi yang akan diproses, dan jika minimum confidence 15%, hanya aturan dengan tingkat kepercayaan minimal 15% yang dianggap relevan. Pengaturan ini sangat penting untuk menyaring aturan yang tidak signifikan dan memastikan hasil analisis yang lebih akurat, sehingga dapat digunakan secara efektif dalam strategi pemasaran dan rekomendasi produk.
+  </p>
 
   @include('komponen.footer')
 
@@ -136,7 +143,7 @@
                     </div>
                     <div class="form-group">
                         <label for="confidance">Nilai Min Confidance</label>
-                        <input type="text" class="form-control" name="confidance" value="{{ $data->confidance }}" required>
+                        <input type="number" class="form-control" name="confidance" value="{{ $data->confidance }}" required>
                     </div>
                 </div>
                 <div class="modal-footer">

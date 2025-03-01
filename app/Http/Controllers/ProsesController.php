@@ -18,16 +18,18 @@ class ProsesController extends Controller
     public function index()
     {
         // Gunakan cache untuk menyimpan daftar transaksi dan produk selama 10 menit
-        $datapagi = Cache::remember('transaksi_pagination', now()->addMinutes(10), function () {
-            return DataTransaksi::paginate(10);
-        });
+        // $datatransaksi = Cache::remember('transaksi_pagination', now()->addMinutes(10), function () {
+        //     return DataTransaksi::all();
+        // });
     
-        $produk = Cache::remember('produk_pagination', now()->addMinutes(10), function () {
-            return Dataproduk::paginate(10);
-        });
+        // $produk = Cache::remember('produk_pagination', now()->addMinutes(10), function () {
+        //     return Dataproduk::paginate(200);
+        // });
+
+        $datatransaksi = DataTransaksi::all();
     
         // Kirim Data ke View
-        return view('backend.proses-data', compact('produk', 'datapagi'));
+        return view('backend.proses-data', compact( 'datatransaksi'));
     }
     
     
@@ -42,6 +44,7 @@ class ProsesController extends Controller
             'query' => request()->query(),
         ]);
     }
+
 
     private function filterHighSupportItems(array $itemCounts, $totalTransactions, $threshold)
     {

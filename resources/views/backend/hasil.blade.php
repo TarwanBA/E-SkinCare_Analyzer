@@ -247,8 +247,18 @@
                 </tr>
             </thead>
             <tbody>
-                @php $no = 1; @endphp
-                @foreach($associationRules as $rule)
+                @php 
+                    $no = 1; 
+                    $sortedRules = collect($associationRules)->sortByDesc('support')->values();
+                    // Ambil nilai support & confidence tertinggi
+                    $highestSupport = $sortedRules->max('support');
+                    $highestConfidence = $sortedRules->max('confidence');
+
+                    // Ambil aturan yang memiliki support tertinggi
+                    $topSupportRule = $sortedRules->firstWhere('support', $highestSupport);
+                    $topConfidenceRule = $sortedRules->firstWhere('confidence', $highestConfidence);
+                @endphp
+                @foreach($sortedRules as $rule)
                     <tr>
                         <td>{{ $no++ }}</td>
                         <td>{{ $rule['pair'] }}</td>
@@ -259,15 +269,93 @@
                 @endforeach
             </tbody>
             </table>
-            
-            <!-- Tambahkan Pagination -->
-            {{-- <div class="d-flex justify-content-center">
-                {{ $associationRules->links('pagination::bootstrap-4') }}
-            </div> --}}
+            <div class="mt-4 p-3 bg-light border rounded">
+                <h5>Berdasarkan Hasil Analisis</h5>
+                <p>
+                    Produk Skincare dengan nilai <strong>Support</strong> tertinggi sebesar ({{ $highestSupport }}), dari 
+                    pasangan produk yang sering dibeli adalah produk **{{ $topSupportRule['pair'] }}**. 
+                </p>
+                <p>
+                    Diikuti dengan nilai <strong>Confidence</strong> tertinggi ({{ $highestConfidence }}) adalah 
+                    pasangan **{{ $topConfidenceRule['pair'] }}**. Ini juga menunjukkan bahwa kombinasi ini sering muncul atau paling banyak dibeli berdarakan data transaksi.
+                </p>
 
+                <div class="mt-4 p-3 bg-light border rounded">
+                    <h5>Berdasarkan aturan asosiasi yang terbentuk dapat disimpulkan bahwa:</h5>
+                
+                    @foreach($sortedRules as $index => $rule)
+                        <p>
+                            <strong>{{ $index + 1 }}.</strong> 
+                            Pasangan **{{ $rule['pair'] }}** memiliki nilai 
+                            <strong>Support</strong> sebesar {{ $rule['support'] }} dan 
+                            <strong>Confidence</strong> sebesar {{ $rule['confidence'] }}.
+                        </p>
+                    @endforeach
+                    <br>
+                  
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Modal Bootstrap -->
+<!-- Modal Bootstrap dengan Ukuran Lebar -->
+<div class="modal fade" id="welcomeModal" tabindex="-1" role="dialog" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document"> <!-- Gunakan modal-lg untuk ukuran besar -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="welcomeModalLabel">Hasil Analisis Produk SkinCare</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span> <!-- Tombol X -->
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Berdasarkan aturan asosiasi yang terbentuk dapat disimpulkan bahwa:</h5>
+               
+                @foreach($sortedRules as $index => $rule)
+                    <p>
+                        <strong>{{ $index + 1 }}.</strong> 
+                        Pasangan produk "<strong>{{ $rule['pair'] }}</strong>" memiliki nilai 
+                        <strong>Support</strong> sebesar {{ $rule['support'] }} dan 
+                        <strong>Confidence</strong> sebesar {{ $rule['confidence'] }}.
+                    </p>
+                @endforeach
+                <div class="mt-4 p-3 bg-light border rounded">
+                    <p>
+                        Dari hasil perhitungan, kombinasi produk skincare di atas merupakan produk yang memenuhi nilai minimum 
+                        <strong>support</strong> & <strong>confidence</strong>. Ini menunjukkan bahwa pasangan produk ini sering muncul dalam transaksi pelanggan. 
+                        Semakin tinggi nilai support dan confidence, semakin sering kombinasi produk ini ditemukan dalam data transaksi penjualan produk skincare.
+                    </p>
+                    <p>
+                        Hal ini mengindikasikan bahwa produk-produk skincare dalam kombinasi ini memiliki keterkaitan yang kuat dan cenderung dibeli secara bersamaan. 
+                        Dengan kata lain, pelanggan yang membeli salah satu produk dalam pasangan ini kemungkinan besar juga membeli produk lainnya.
+                    </p>
+                    <p>
+                        Informasi ini dapat dimanfaatkan untuk meningkatkan strategi pemasaran, seperti dengan menawarkan diskon bundling 
+                        atau menampilkan rekomendasi produk yang lebih relevan bagi pelanggan. Selain itu, analisis ini juga berguna untuk 
+                        mengoptimalkan stok barang, memastikan ketersediaan produk yang sering dibeli bersamaan, serta meningkatkan pengalaman belanja pelanggan.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="mdi mdi-eye"></i> Lihat Detail
+                </button>                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script untuk Menampilkan Modal Saat Halaman Dimuat -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var myModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+        myModal.show();
+    });
+</script>
+
+
 
   @include('komponen.footer')
 
