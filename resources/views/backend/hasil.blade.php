@@ -14,12 +14,13 @@
           </ul>
           <div class="d-flex">
             <div class="btn-wrapper">
-                <a href="{{route('cetakpdf.hasil')}}" class="btn btn-outline-dark align-items-center" target="_blank">
-                    <i class="mdi mdi-printer"></i> Cetak Data Pdf
+                <a href="{{ route('cetakpdf.hasil') }}" class="btn btn-outline-dark align-items-center" target="_blank">
+                    <i class="mdi mdi-file-pdf-box"></i> Cetak PDF
                 </a>
-                {{-- <a href="{{route('exportExcel.hasil')}}" class="btn btn-outline-dark align-items-center" target="_blank">
-                    <i class="mdi mdi-printer"></i> Cetak Data Excel
-                </a> --}}
+                <a href="{{ route('exportExcel.hasil') }}" class="btn btn-outline-dark align-items-center" target="_blank">
+                    <i class="mdi mdi-file-excel-box"></i> Cetak Excel
+                </a>
+                
             </div>
         </div>            
         </div>

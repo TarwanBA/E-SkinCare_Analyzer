@@ -9,7 +9,7 @@ class HasilAnalisisExport implements WithMultipleSheets
     protected $calonitemset;
     protected $Hasilitemsetone;
     protected $calonitemsettwo;
-    protected $hasil2itemset;
+    protected $filteredTwoItemset;
     protected $twoItemSetsPaginated;
    
     
@@ -21,7 +21,7 @@ class HasilAnalisisExport implements WithMultipleSheets
         $calonitemset,
         $Hasilitemsetone, 
         $calonitemsettwo,
-        $hasil2itemset, 
+        $filteredTwoItemset, 
 
         $twoItemSetsPaginated,        
         $filteredTwoItemsetWithConfidence, 
@@ -31,7 +31,7 @@ class HasilAnalisisExport implements WithMultipleSheets
         $this->calonitemset = $calonitemset;
         $this->Hasilitemsetone = $Hasilitemsetone;
         $this->calonitemsettwo = $calonitemsettwo;
-        $this->hasil2itemset = $hasil2itemset;
+        $this->filteredTwoItemset = $filteredTwoItemset;
 
         $this->twoItemSetsPaginated = $twoItemSetsPaginated;
         $this->filteredTwoItemsetWithConfidence = $filteredTwoItemsetWithConfidence;
@@ -45,9 +45,9 @@ class HasilAnalisisExport implements WithMultipleSheets
             new SheetExport($this->calonitemset, ['Produk', 'Frekuensi', 'Support'], 'Calon Itemset'),
             new SheetExport($this->Hasilitemsetone, ['Produk', 'Frekuensi', 'Support'], 'Hasil Itemset 1'),
             new SheetExport($this->calonitemsettwo, ['Produk', 'Frekuensi', 'Support'], 'Calon Itemset 2'),
-            new SheetExport($this->hasil2itemset, ['Produk', 'Frekuensi', 'Support'], 'Hasil Itemset 2'),
-            new SheetExport($this->filteredTwoItemsetWithConfidence, ['Pola 2-Itemset', 'Frekuensi A', 'Frekuensi B', 'Confidence'], 'Hasil Confidence'),
-            new SheetExport($this->filteredTwoItemsetWithConfidencemin, ['Pola 2-Itemset', 'Frekuensi A', 'Frekuensi B', 'Confidence'], 'Hasil Min Confidence'),
+            new SheetExport($this->filteredTwoItemset, ['Produk', 'Frekuensi', 'Support'], 'Hasil Itemset 2'),
+            new SheetExport($this->filteredTwoItemsetWithConfidence, ['Pola 2-Itemset', 'Frekuensi A', 'Frekuensi A&B', 'Confidence'], 'Hasil Confidence'),
+            new SheetExport($this->filteredTwoItemsetWithConfidencemin, ['Pola 2-Itemset', 'Frekuensi A', 'Frekuensi A&B', 'Confidence'], 'Hasil Min Confidence'),
             new SheetExport($this->associationRules, ['Aturan', 'Support', 'Confidence'], 'Aturan Asosiasi'),
        
         ];

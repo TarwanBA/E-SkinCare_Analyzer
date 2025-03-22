@@ -19,7 +19,7 @@ class SheetExport implements FromArray, WithHeadings, WithStyles, WithTitle, Wit
     {
         $this->data = $data;
         $this->headings = $headings;
-        $this->title = $title; // Simpan nama sheet
+        $this->title = $title;
     }
 
     public function array(): array

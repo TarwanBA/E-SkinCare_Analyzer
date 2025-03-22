@@ -44,7 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/analyzer', [ProsesController::class, 'analyzer'])->name('proses.analyzer');
     Route::get('/hasil-proses', [ProsesController::class, 'hasil'])->name('hasil.proses')->middleware(CekProsesSelesai::class);
     Route::get('/cetak-pdf', [ProsesController::class, 'cetak'])->name('cetakpdf.hasil');
-    // Route::get('/cetak-excel', [ProsesController::class, 'exportExcel'])->name('exportExcel.hasil');
+    Route::get('/cetak-excel', [ProsesController::class, 'exportExcel'])->name('exportExcel.hasil');
 
     Route::get('/setting-fp', [FpgrowthController::class, 'index'])->name('fp.index');
     Route::put('/setting-fp{id}', [FpgrowthController::class, 'update'])->name('fp.update');

@@ -515,213 +515,228 @@ class ProsesController extends Controller
     }
 
 
-// public function exportExcel()
-// {
-//      // Ambil Data Transaksi dan Produk dengan Paginate
-//      $datapagi = DataTransaksi::paginate(10);
-//      $produk = Dataproduk::paginate(10);  
-//      $FpSupport = Fpgrowth::value('support');
-//      $FpConfidance = Fpgrowth::value('confidance');          
+public function exportExcel()
+{
+     // Ambil Data Transaksi dan Produk dengan Paginate
+     $datapagi = DataTransaksi::paginate(10);
+     $produk = Dataproduk::paginate(10);  
+     $FpSupport = Fpgrowth::value('support');
+     $FpConfidance = Fpgrowth::value('confidance');          
 
-//      // Bangun Data Transaksi untuk Fgrowth
-//      $transactions = [];
-//      foreach (DataTransaksi::all() as $transaksi) {
-//          // Asumsikan `nama_produk` adalah string dengan produk yang dipisahkan oleh koma
-//          $transactions[] = explode(", ", $transaksi->nama_produk);
-//      }
+     // Bangun Data Transaksi untuk Fgrowth
+     $transactions = [];
+     foreach (DataTransaksi::all() as $transaksi) {
+         // Asumsikan `nama_produk` adalah string dengan produk yang dipisahkan oleh koma
+         $transactions[] = explode(", ", $transaksi->nama_produk);
+     }
  
-//      // Jalankan Algoritma Fgrowth
-//      $fgrowth = new Fgrowth(0.4, 0.6);
-//      $fgrowth->train($transactions, []);
+     // Jalankan Algoritma Fgrowth
+     $fgrowth = new Fgrowth(0.4, 0.6);
+     $fgrowth->train($transactions, []);
  
-//      // Menghitung Frekuensi Kemunculan Item
-//      $itemCounts = [];
-//      $totalTransactions = count($transactions);
-//      foreach ($transactions as $items) {
-//          foreach ($items as $item) {
-//              $itemCounts[$item] = ($itemCounts[$item] ?? 0) + 1;
-//          }
-//      }
+     // Menghitung Frekuensi Kemunculan Item
+     $itemCounts = [];
+     $totalTransactions = count($transactions);
+     foreach ($transactions as $items) {
+         foreach ($items as $item) {
+             $itemCounts[$item] = ($itemCounts[$item] ?? 0) + 1;
+         }
+     }
 
 
-//      // Daftar produk Calon Itemset
-//     $datacalonitemset = [];
-//     foreach ($itemCounts as $item => $count) {
-//         $support = ($count / $totalTransactions) * 100;
+     // Daftar produk Calon Itemset
+    $datacalonitemset = [];
+    foreach ($itemCounts as $item => $count) {
+        $support = ($count / $totalTransactions) * 100;
 
-//         if ($support >= 0) {
-//             $datacalonitemset[$item] = [
-//                 'item'    => $item,
-//                 'count'   => $count,
-//                 'support' => number_format($support, 2) . '%'
-//             ];
-//         }
-//     }
+        if ($support >= 0) {
+            $datacalonitemset[$item] = [
+                'item'    => $item,
+                'count'   => $count,
+                'support' => number_format($support, 2) . '%'
+            ];
+        }
+    }
 
-//      // dd($totalTransactions);
+     // dd($totalTransactions);
 
-//      //Hasil 1-Itemset memenuhi minimum support
-//      $Itemset1 = [];
-//      foreach ($itemCounts as $item => $count) {
-//          $support = ($count / $totalTransactions) * 100;
-//          if ($support >= $FpSupport) {
-//              $Itemset1[$item] = [
-//                  'item'    => $item,
-//                  'count' => $count,
-//                  'support' => number_format($support, 2) . '%'
-//              ];
-//          }
-//      }
+     //Hasil 1-Itemset memenuhi minimum support
+
+     $Itemset1 = [];
+     foreach ($itemCounts as $item => $count) {
+         $support = ($count / $totalTransactions) * 100;
+         if ($support >= $FpSupport) {
+             $Itemset1[$item] = [
+                'Produk' => $item,
+                 'count' => $count,
+                 'support' => number_format($support, 2) . '%',
+                 'support_value' => $support
+             ];
+         }
+     }
+     
+     // Urutkan berdasarkan support tertinggi
+     uasort($Itemset1, function ($a, $b) {
+         return $b['support_value'] <=> $a['support_value'];
+     });
+     
+     // Hapus key nilai support'support_value' setelah sorting
+     foreach ($Itemset1 as &$item) {
+         unset($item['support_value']);
+     }
 
      
-//      //Tidak terpakai
-//      $twoItemSets = [];
-//      foreach ($transactions as $items) {
-//          // Buat kombinasi 2-itemset untuk setiap transaksi
-//          $combinations = $this->getCombinations($items, 2);
-//          foreach ($combinations as $combination) {
-//              $pair = implode(", ", $combination);
-//              $twoItemSets[$pair] = ($twoItemSets[$pair] ?? 0) + 1;
-//          }
-//      }
-//      //___________________________
 
+     $twoItemSets = [];
+
+     // Ambil daftar item dari Itemset1
+     $itemsFromItemset1 = array_keys($Itemset1);
+
+     // Buat kombinasi 2-itemset
+     $combinations = $this->getCombinations($itemsFromItemset1, 2);
+
+     foreach ($combinations as $combination) {
+         $pair = implode(", ", $combination);
+         $twoItemSets[$pair] = 0;
+     }
+
+     // Hitung frekuensi kombinasi dalam transaksi
+     foreach ($transactions as $items) {
+         foreach ($combinations as $combination) {
+             $pair = implode(", ", $combination);
+
+             if (in_array($combination[0], $items) && in_array($combination[1], $items)) {
+                 $twoItemSets[$pair]++;
+             }
+         }
+     }
+
+
+     $Itemset2 = [];
+     $minSupport = 0;
+
+     foreach ($twoItemSets as $pair => $count) {
+         if ($totalTransactions > 0) { 
+             $support = ($count / $totalTransactions) * 100;
+
+             if ($support >= $minSupport) {
+                 $Itemset2[$pair] = [
+                     'Produk' => $pair,
+                     'count' => $count,
+                     'support' => number_format($support, 2) . '%'
+                 ];
+             }
+         }
+     }
+
+     // Hasil 2-Itemset Memenuhi Minimum Support
+     $filteredTwoItemset = [];
+     foreach ($twoItemSets as $pair => $count) {
+         $support = ($count / $totalTransactions) * 100;
+         if ($support >= $FpSupport) {
+             $filteredTwoItemset[$pair] = [
+                 'Produk' => $pair,
+                 'count' => $count,
+                 'support' => number_format($support, 2) . '%'
+             ];
+         }
+     }
+
+
+     // Hasil Confidence
+     $filteredTwoItemsetWithConfidence = [];
+     foreach ($filteredTwoItemset as $pair => $data) {
+
+         $items = explode(", ", $pair);
+         $item1 = $items[0];
+         $item2 = $items[1];
+
+         $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
+
+         $supportItem2 = ($itemCounts[$item2] ?? 0) / $totalTransactions;
      
-//      // Daftar produk Calon 2-Itemset
-//      $Itemset2 = [];
-//      foreach ($twoItemSets as $pair => $count) {
-//          $support = ($count / $totalTransactions) * 100;
-//          if ($support >= 0) {
-//              $Itemset2[$pair] = [
-//                  'pair'    => $pair,
-//                  'count' => $count,
-//                  'support' => number_format($support, 2) . '%'
-//              ];
-//          }
-//      }
 
-//      // Hasil 2-Itemset Memenuhi Minimum Support
-//      $HasilItemset2 = [];
-//      foreach ($twoItemSets as $pair => $count) {
-//          $support = ($count / $totalTransactions) * 100;
-//          if ($support >= $FpSupport) {
-//              $HasilItemset2[$pair] = [
-//                  'pair'    => $pair,
-//                  'count' => $count,
-//                  'support' => number_format($support, 2) . '%'
-//              ];
-//          }
-//      }
+         $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100;
 
-//      // Hasil 2-Itemset Memenuhi Minimum Support
-//     //  $filteredTwoItemset = [];
-//     //  foreach ($twoItemSets as $pair => $count) {
-//     //      $support = ($count / $totalTransactions) * 100;
-//     //      if ($support >= $FpSupport) {
-//     //          $filteredTwoItemset[$pair] = [
-//     //              'pair'    => $pair,
-//     //              'count' => $count,
-//     //              'support' => number_format($support, 2) . '%'
-//     //          ];
-//     //      }
-//     //  }
+         if ($confidenceAB >= 0) {
+             $filteredTwoItemsetWithConfidence[$pair] = [
+                 'pair' => "$item1, $item2",
+                 'frekuensi_A' => $itemCounts[$item1] ?? 0, 
+                 'frekuensi_A_&_B' => $data['count'], 
+                 'confidenceAB' => number_format($confidenceAB, 2) . '%' 
+             ];
+         }
+     }
 
+     // Aturan Hasil Memenuhi Minimum Confidence
+     $filteredTwoItemsetWithConfidencemin = [];
+     foreach ($filteredTwoItemset as $pair => $data) {
 
-//      // Hasil Confidence
-//      $filteredTwoItemsetWithConfidence = [];
-//      foreach ($HasilItemset2 as $pair => $data) {
-//          // Mengambil item dari pasangan
-//          $items = explode(", ", $pair);
-//          $item1 = $items[0];
-//          $item2 = $items[1];
-
-//          // Menghitung Support untuk item B    
-
-//          $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100;
-
-//          // Menyaring hanya yang memiliki confidence
-//          if ($confidenceAB >= 0) {
-//             $filteredTwoItemsetWithConfidence[$pair] = [
-//                 'item_pair' => $item1 . ',' . $item2,
-//                 'frekuensi_A' => $itemCounts[$item1] ?? 0, 
-//                 'frekuensi_A_&_B' => $data['count'], 
-//                 'confidenceAB' => number_format($confidenceAB, 2) . '%' 
-//             ];
-//         }
-        
-//      }
-
-//      // Aturan Hasil Memenuhi Minimum Confidence
-//      $filteredTwoItemsetWithConfidencemin = [];
-//      foreach ($HasilItemset2 as $pair => $data) {
-
-//          // Mengambil item dari pasangan
-//          $items = explode(", ", $pair);
-//          $item1 = $items[0];
-//          $item2 = $items[1];
+         $items = explode(", ", $pair);
+         $item1 = $items[0];
+         $item2 = $items[1];
        
-//          $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100; 
+         $confidenceAB = ($data['count'] / $itemCounts[$item1]) * 100; 
 
-//          // Menyaring hanya yang memiliki confidence ≥ 15%
-//          if ($confidenceAB >= $FpConfidance) {
-//              $filteredTwoItemsetWithConfidencemin[$pair] = [
-//                  'item_pair' => $item1 . ',' . $item2,
-//                  'frekuensi_A' => $itemCounts[$item1] ?? 0, 
-//                  'frekuensi_A_&_B' => $data['count'], 
-//                  'confidenceAB' => number_format($confidenceAB, 2) . '%' 
-//              ];
-//          }
-//      }
+         if ($confidenceAB >= $FpConfidance) {
+             $filteredTwoItemsetWithConfidencemin[$pair] = [
+                 'pair' => "$item1, $item2",
+                 'frekuensi_A' => $itemCounts[$item1] ?? 0, 
+                 'frekuensi_A_&_B' => $data['count'], 
+                 'confidenceAB' => number_format($confidenceAB, 2) . '%' 
+             ];
+         }
+     }
 
-//      // Hasil Aturan Asosiasi yang Terbentuk
-//      $associationRules = [];
-//      foreach ($HasilItemset2 as $pair => $data) {
+     // Hasil Aturan Asosiasi yang Terbentuk
+     $associationRules = [];
+     foreach ($filteredTwoItemset as $pair => $data) {
 
-//          $items = explode(", ", $pair);
-//          $item1 = $items[0];
-//          $item2 = $items[1];
+         $items = explode(", ", $pair);
+         $item1 = $items[0];
+         $item2 = $items[1];
 
-//           // Menghitung Confidence untuk A → B
-//          $supportItem1 = ($itemCounts[$item1] ?? 0) / $totalTransactions;
-//          $supportBoth = ($data['count'] / $totalTransactions);
-//          $confidenceAB = ($supportBoth / $supportItem1) * 100; 
+         $supportItem1 = ($itemCounts[$item1] ?? 0) / $totalTransactions;
+         $supportBoth = ($data['count'] / $totalTransactions);
+         $confidenceAB = ($supportBoth / $supportItem1) * 100; 
 
-//          if ($confidenceAB >= $FpConfidance || $confidenceAB >= $FpConfidance) {
-//              $associationRules[] = [
-//                  'pair' => "$item1, $item2",
-//                  'support' => number_format(($data['count'] / $totalTransactions) * 100, 2) . '%', // Support A & B
-//                  'confidence' => number_format($confidenceAB >= $FpConfidance ? $confidenceAB : $confidenceAB, 2) . '%'  // Menampilkan Confidence
-//              ];
-//          }
-//      }
+         if ($confidenceAB >= $FpConfidance || $confidenceAB >= $FpConfidance) {
+             $associationRules[] = [
+                 'pair' => "$item1, $item2",
+                 'support' => number_format(($data['count'] / $totalTransactions) * 100, 2) . '%', // Support A & B
+                 'confidence' => number_format($confidenceAB >= $FpConfidance ? $confidenceAB : $confidenceAB, 2) . '%'  // Menampilkan Confidence
+             ];
+         }
+     }
 
 
-//     // Hanya Ambil Produk dengan Support ≥ 2%
-//      $filteredItemsetPaginated = $this->filterHighSupportItems($itemCounts, $totalTransactions, 8);
+
+    // Hanya Ambil Produk dengan Support ≥ 2%
+     $filteredItemsetPaginated = $this->filterHighSupportItems($itemCounts, $totalTransactions, 8);
 
     
-//      $calonitemset = $datacalonitemset;
-//      $Hasilitemsetone = $Itemset1;
-//      $calonitemsettwo = $Itemset2;
+     $calonitemset = $datacalonitemset;
+     $Hasilitemsetone = $Itemset1;
+     $calonitemsettwo = $Itemset2;
 
-//      $hasil2itemset = $HasilItemset2;
+     $hasil2itemset = $filteredTwoItemset;
  
 
-//      // dd(vars: $associationRules);
+     // dd(vars: $associationRules);
 
-//     return Excel::download(new HasilAnalisisExport(
-//         $calonitemset ,
-//         $Hasilitemsetone, 
-//         $calonitemsettwo, 
-//         $HasilItemset2, 
+    return Excel::download(new HasilAnalisisExport(
+        $calonitemset ,
+        $Hasilitemsetone, 
+        $calonitemsettwo, 
+        $filteredTwoItemset, 
 
-//     $filteredItemsetPaginated, 
-//     $filteredTwoItemsetWithConfidence, 
-//     $filteredTwoItemsetWithConfidencemin, 
-//     $associationRules
-// ), 'laporan-hasil-analisis.xlsx');
+    $filteredItemsetPaginated, 
+    $filteredTwoItemsetWithConfidence, 
+    $filteredTwoItemsetWithConfidencemin, 
+    $associationRules
+), 'laporan-hasil-analisis.xlsx');
 
-// }
+}
 
     
 
