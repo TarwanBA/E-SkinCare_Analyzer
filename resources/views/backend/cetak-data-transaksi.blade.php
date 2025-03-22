@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Transaksi</title>
+    <title>Laporan Data Transaksi Produk</title>
+    <link rel="icon" href="{{ asset('assets/images/logo-Umi.ico') }}" />
     <style>
         body { font-family: Arial, sans-serif; font-size: 12px; }
         .header { text-align: left; margin-bottom: 10px; }
@@ -17,7 +18,6 @@
         th { background-color: #f2f2f2; font-size: 12px; text-align: center}
         td { font-size: 11px; }
 
-        /* Title table */
         .table-title {
             font-size: 14px;
             font-weight: bold;
@@ -28,9 +28,9 @@
 </head>
 <body>
     <div class="header">
-        <h2>E-Skincare_Analyzer</h2>
-        <h4>Jl. Jati Metro No. 123, Ternate Tengah, Indonesia</h4>
-        <h4>Email: umi@unkhair.ac.id | Telp: (021) 123456</h4>
+        <h2>Ternate Kosmetik</h2>
+        <h4>Jln. Raya Jati Depan Toko Dua Sekawan Kel. Jati </h4>
+        <h4>Ternate Selatan, Kota Ternate Maluku Utara</h4>
     </div>
     <div class="line"></div>
 
@@ -41,7 +41,7 @@
         <thead>
             <tr>
               <th>No</th>
-              <th>Tanggal</th>
+              <th>Tanggal Transaksi</th>
               <th>Nama Produk</th>
             </tr>
         </thead>

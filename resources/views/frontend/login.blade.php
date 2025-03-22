@@ -1,6 +1,7 @@
 @extends('layout.fe')
 
 @section('login')
+@include('komponen.pesan')
 <div class="container-fluid page-body-wrapper full-page-wrapper" data-aos="zoom-in" data-aos-duration="1500">
     <div class="content-wrapper d-flex align-items-center auth px-0">
       <div class="row w-100 mx-0">

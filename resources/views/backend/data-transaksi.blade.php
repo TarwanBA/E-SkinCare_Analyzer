@@ -2,6 +2,8 @@
 
 @section('dashboard')
 
+@include('komponen.pesan')
+
 <div class="row">
     <div class="col-sm-12">
       <div class="home-tab">
@@ -33,10 +35,10 @@
       </div>
     </div>
   </div>
-  <h5 style="text-align: center;" class="mt-3">
+  <h5 style="text-align: center;" class="mt-4">
     Berikut ini merupakan data transaksi produk skincare Ternate Kosmetik
   </h5>
-<div class="col-lg-12 grid-margin stretch-card mt-3">
+<div class="col-lg-12 grid-margin stretch-card mt-4">
     <div class="card">
       <div class="card-body">
         <h4 class="card-title">Daftar Data Transaksi</h4>
@@ -52,7 +54,7 @@
               </tr>
             </thead>
             <tbody>
-                @foreach($datapagi as $data)
+                @foreach($datatransaksi as $data)
                     <tr>
                         <td>{{ $loop->iteration }}</td> 
                         <td>{{ $data->tanggal_transaksi }}</td> 
@@ -75,13 +77,8 @@
                     </tr>
                 @endforeach
             </tbody>
-            
           </table>
-            <!-- Pagination -->
-            <div class="d-flex justify-content-center">
-                {{ $datapagi->links('pagination::bootstrap-4') }}
-            </div>   
-            </div>
+        </div>
       </div>
     </div>
   </div>
@@ -146,8 +143,6 @@
         </div>
     </div>
 </div>
-
-
  
 <!-- Modal Edit Data -->
 @foreach ($datatransaksi as $data)

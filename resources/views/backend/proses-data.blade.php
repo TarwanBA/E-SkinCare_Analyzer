@@ -46,10 +46,6 @@
             </tbody>
             
           </table>
-            <!-- Pagination -->
-            {{-- <div class="d-flex justify-content-center">
-                {{ $datapagi->links('pagination::bootstrap-4') }}
-            </div>    --}}
         </div>
       </div>
     </div>

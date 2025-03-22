@@ -9,19 +9,9 @@ use Illuminate\Support\Facades\Cache;
 
 class DataprodukController extends Controller
 {
-    public function index(Request $request) {
-        $query = Dataproduk::query();
-        
-        // Jika ada input pencarian
-        if ($request->has('search')) {
-            $query->where('nama_produk', 'like', '%' . $request->search . '%')
-                  ->orWhere('kode_produk', 'like', '%' . $request->search . '%');
-        }
-    
-        // Gunakan cache untuk menyimpan hasil pagination selama 10 menit
-        $produk = Cache::remember('produk_list_' . $request->search, now()->addMinutes(10), function () use ($query) {
-            return $query->paginate(10);
-        });
+    public function index(Request $request) 
+    {
+        $produk = Dataproduk::all();
 
         return view('backend.data-produk', compact('produk'));
     }
@@ -29,7 +19,6 @@ class DataprodukController extends Controller
     // Menampilkan detail produk
     public function show($id)
     {
-        // Gunakan cache untuk menyimpan data detail produk selama 10 menit
         $produk = Cache::remember('produk_detail_' . $id, now()->addMinutes(10), function () use ($id) {
             return Dataproduk::findOrFail($id);
         });
@@ -37,7 +26,7 @@ class DataprodukController extends Controller
         return view('backend.data-produk.show', compact('produk'));
     }
 
-    // Menampilkan form tambah produk
+    // Menampilkan form
     public function create()
     {
         return view('backend.data-produk.create');
@@ -56,20 +45,20 @@ class DataprodukController extends Controller
             'nama_produk' => $request->nama_produk,
         ]);
 
-        // Hapus cache daftar produk agar data baru muncul di halaman index
+        // Hapus cache
         Cache::forget('produk_list_');
 
         return redirect()->route('data-produk.index')->with('success', 'Data produk berhasil ditambahkan.');
     }
 
-    // Menampilkan form edit produk
+    // Menampilkan form
     public function edit($id)
     {
         $produk = Dataproduk::findOrFail($id);
         return view('backend.data-produk.edit', compact('produk'));
     }
 
-    // Mengupdate produk yang sudah ada
+    // Mengupdate produk
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -83,7 +72,7 @@ class DataprodukController extends Controller
             'nama_produk' => $request->nama_produk,
         ]);
 
-        // Hapus cache detail produk dan daftar produk agar data terbaru muncul
+        // Hapus cache
         Cache::forget('produk_detail_' . $id);
         Cache::forget('produk_list_');
 
@@ -96,7 +85,7 @@ class DataprodukController extends Controller
         $produk = Dataproduk::findOrFail($id);
         $produk->delete();
 
-        // Hapus cache daftar produk agar data terbaru muncul
+        // Hapus cache
         Cache::forget('produk_list_');
 
         return redirect()->route('data-produk.index')->with('success', 'Data produk berhasil dihapus.');
@@ -105,12 +94,11 @@ class DataprodukController extends Controller
     // Fungsi cetak PDF
     public function cetak()
     {
-        // Gunakan cache untuk menyimpan data cetak selama 10 menit
         $dataproduk = Cache::remember('produk_cetak', now()->addMinutes(10), function () {
             return Dataproduk::all();
         });
 
-        // Render ke dalam view cetak-data-produk.blade.php
+        // Render ke dalam view
         $pdf = Pdf::loadView('backend.cetak-data-produk', compact('dataproduk'));
 
         return $pdf->stream('laporan-data-produk.pdf');

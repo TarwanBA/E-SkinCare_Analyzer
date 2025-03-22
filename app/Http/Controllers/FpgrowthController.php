@@ -10,10 +10,11 @@ class FpgrowthController extends Controller
     public function index()
     {
         $fp = Fpgrowth::all();
+        $support = Fpgrowth::value('support');
+        $confidence = Fpgrowth::value('confidance');
 
-        return view("backend.fpgrowth", compact('fp'));
+        return view("backend.fpgrowth", compact('fp', 'support', 'confidence'));
     }
-
 
     public function update(Request $request, $id)
     {

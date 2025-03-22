@@ -25,7 +25,7 @@ class LoginController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        // Cek cache untuk pengguna berdasarkan email
+        // Cek cache 
         $user = Cache::remember("user_{$request->email}", now()->addMinutes(10), function () use ($request) {
             return User::where('email', $request->email)->first();
         });
@@ -38,7 +38,7 @@ class LoginController extends Controller
             return redirect()->intended('dashboard');
         }
 
-        // Jika login gagal, kembali ke halaman login dengan pesan error
+        // Jika login gagal, kembali ke halaman login
         return redirect()->back()->withErrors([
             'email' => 'Email atau password anda salah',
         ]);

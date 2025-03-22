@@ -2,13 +2,15 @@
 
 @section('dashboard')
 
+@include('komponen.pesan')
+
 <div class="row">
     <div class="col-sm-12">
         <div class="home-tab">
           <div class="d-sm-flex align-items-center justify-content-between border-bottom">
             <ul class="nav nav-tabs" role="tablist">
               <li class="nav-item">
-                <a class="nav-link active ps-0" id="home-tab" data-bs-toggle="tab" href="#overview" role="tab" aria-controls="overview" aria-selected="true">Data Transaksi</a>
+                <a class="nav-link active ps-0" id="home-tab" data-bs-toggle="tab" href="#overview" role="tab" aria-controls="overview" aria-selected="true">Data Produk</a>
               </li>
             </ul>
             <div class="d-flex">
@@ -28,66 +30,47 @@
         </div>
       </div>
   </div>
-  <h5 style="text-align: center;" class="mt-3">
+  <h5 style="text-align: center;" class="mt-4">
     Berikut ini merupakan data produk skincare Ternate Kosmetik
   </h5>
-<div class="col-lg-12 grid-margin stretch-card mt-3">
+
+<div class="col-lg-12 grid-margin stretch-card mt-4">
     <div class="card">
       <div class="card-body">
         <h4 class="card-title">Daftar Data Produk</h4>
         <div class="table-responsive">
-                <!-- Form Pencarian -->
-                <!-- Form Pencarian -->
-                <div class="col-md-12 d-flex justify-content-end">  <!-- Menambahkan d-flex dan justify-content-end untuk mengatur posisi di kanan -->
-                    <form method="GET" action="{{ route('data-produk.index') }}">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <input type="text" name="search" class="form-control" placeholder="Cari Produk..." value="{{ request()->search }}">
-                            </div>
-                            <div class="col-md-6">
-                                <button type="submit" class="btn btn-primary">Cari</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <!-- Tabel Produk -->
-                <table class="table">
-                    <thead>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Kode Produk</th>
+                        <th>Nama Produk</th>
+                        <th style="text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($produk as $data)
                         <tr>
-                            <th>No</th>
-                            <th>Kode Produk</th>
-                            <th>Nama Produk</th>
-                            <th style="text-align: center;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($produk as $data)
-                            <tr>
-                                <td>{{ $loop->iteration + ($produk->currentPage() - 1) * $produk->perPage() }}</td>
-                                <td>{{ $data->kode_produk }}</td>
-                                <td>{{ $data->nama_produk }}</td>
-                                <td>
-                                    <button type="button" class="badge badge-warning border-0" data-toggle="modal" data-target="#modalEdit{{ $data->id }}">
-                                        <i class="mdi mdi-pencil"></i> 
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $data->kode_produk }}</td>
+                            <td>{{ $data->nama_produk }}</td>
+                            <td>
+                                <button type="button" class="badge badge-warning border-0" data-toggle="modal" data-target="#modalEdit{{ $data->id }}">
+                                    <i class="mdi mdi-pencil"></i> 
+                                </button>
+        
+                                <form action="{{ route('data-produk.destroy', $data->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="badge badge-danger border-0" onclick="return confirm('Apakah Anda yakin ingin menghapus transaksi ini?')">
+                                        <i class="mdi mdi-trash-can"></i> 
                                     </button>
-            
-                                    <form action="{{ route('data-produk.destroy', $data->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="badge badge-danger border-0" onclick="return confirm('Apakah Anda yakin ingin menghapus transaksi ini?')">
-                                            <i class="mdi mdi-trash-can"></i> 
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            
-                <!-- Pagination -->
-                <div class="d-flex justify-content-center">
-                    {{ $produk->links('pagination::bootstrap-4') }}
-                </div>            
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
       </div>
     </div>

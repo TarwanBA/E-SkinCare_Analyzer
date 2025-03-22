@@ -22,7 +22,7 @@
     <!-- inject:css -->
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- endinject -->
-    <link rel="shortcut icon" href="assets/images/logo-Umi.ico" />
+    <link rel="shortcut icon" href="{{asset ('assets/images/logo-Umi.ico')}}" />
     <!-- CSS untuk Animasi Konfeti -->
 
 

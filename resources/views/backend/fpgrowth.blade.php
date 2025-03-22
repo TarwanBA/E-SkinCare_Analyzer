@@ -13,14 +13,10 @@
             </ul>
             <div class="d-flex">
               <div class="btn-wrapper mr-2">
-                  {{-- <a href="{{route('data-produk.cetak')}}" class="btn btn-outline-dark align-items-center" target="_blank">
-                      <i class="mdi mdi-printer"></i> Cetak Data
-                  </a> --}}
+                
               </div>
               <div class="btn-wrapper">
-                  {{-- <a class="btn btn-outline-dark align-items-center" data-toggle="modal" data-target="#modalTambah">
-                      <i class="mdi mdi-plus"></i> Tambah Data
-                  </a> --}}
+                 
               </div>
           </div>
           
@@ -34,10 +30,6 @@
       <div class="card-body">
         <h4 class="card-title">Pengaturan Nilai Support & Confidance</h4>
         <div class="table-responsive">
-                <!-- Form Pencarian -->
-                <!-- Form Pencarian -->
-              
-                <!-- Tabel Produk -->
                 <table class="table">
                     <thead>
                         <tr>
@@ -70,11 +62,6 @@
                         @endforeach
                     </tbody>
                 </table>
-            
-                <!-- Pagination -->
-                {{-- <div class="d-flex justify-content-center">
-                    {{ $produk->links('pagination::bootstrap-4') }}
-                </div>             --}}
         </div>
       </div>
     </div>
@@ -83,42 +70,10 @@
     Dengan mengatur nilai minimum support dan confidence dalam analisis aturan asosiasi menggunakan metode FP-Growth. Minimum support menentukan seberapa sering suatu kombinasi produk muncul dalam transaksi agar dianggap sebagai aturan yang valid, sementara minimum confidence mengukur seberapa kuat hubungan antara produk dalam aturan tersebut. Jika nilai support tinggi, hanya kombinasi produk yang sering muncul yang dianalisis, sedangkan nilai rendah memungkinkan lebih banyak pola ditemukan. Begitu juga dengan confidence, nilai tinggi memastikan hanya aturan dengan hubungan kuat yang dipertahankan, sementara nilai rendah bisa menghasilkan lebih banyak aturan, termasuk yang hubungannya lemah. 
     <br>
     <br>
-    Misalnya, jika minimum support ditetapkan 2%, hanya kombinasi produk yang muncul di minimal 2% dari total transaksi yang akan diproses, dan jika minimum confidence 15%, hanya aturan dengan tingkat kepercayaan minimal 15% yang dianggap relevan. Pengaturan ini sangat penting untuk menyaring aturan yang tidak signifikan dan memastikan hasil analisis yang lebih akurat, sehingga dapat digunakan secara efektif dalam strategi pemasaran dan rekomendasi produk.
+    Misalnya, jika minimum support ditetapkan {{ $support }}%, hanya kombinasi produk yang muncul di minimal {{ $support }}% dari total transaksi yang akan diproses, dan jika minimum confidence {{ $confidence }}%, hanya aturan dengan tingkat confidance minimal {{ $confidence }}% yang dianggap relevan. Pengaturan ini sangat penting untuk menyaring aturan yang tidak signifikan dan memastikan hasil analisis yang lebih akurat, sehingga dapat digunakan secara efektif dalam strategi pemasaran dan rekomendasi produk.
   </p>
 
   @include('komponen.footer')
-
-
-<!-- Modal Tambah Data -->
-{{-- <div class="modal fade" id="modalTambah" tabindex="-1" role="dialog" aria-labelledby="modalTambahLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTambahLabel">Tambah Data Produk Skincare</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form action="{{ route('data-produk.store') }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="kode_produk">Kode Produk</label>
-                        <input type="text" class="form-control" name="kode_produk" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="nama_produk">Nama Produk</label>
-                        <input type="text" class="form-control" name="nama_produk" placeholder="Masukkan nama produk" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div> --}}
 
 
  

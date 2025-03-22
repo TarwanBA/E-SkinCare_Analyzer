@@ -26,7 +26,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/data-produk/{id}', [DataprodukController::class, 'destroy'])->name('data-produk.destroy');
     Route::get('/cetak-data-produk', [DataprodukController::class, 'cetak'])->name('data-produk.cetak');
 
-
     // Rute untuk data transaksi
     Route::get('/data-transaksi', [DataTransaksiController::class, 'index'])->name('data-transaksi.index');
     Route::get('/data-transaksi/{id}', [DataTransaksiController::class, 'show'])->name('data-transaksi.show');
@@ -44,7 +43,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/analyzer', [ProsesController::class, 'analyzer'])->name('proses.analyzer');
     Route::get('/hasil-proses', [ProsesController::class, 'hasil'])->name('hasil.proses')->middleware(CekProsesSelesai::class);
-    Route::get('/cetak', [ProsesController::class, 'exportExcel'])->name('cetak.hasil');
+    Route::get('/cetak-pdf', [ProsesController::class, 'cetak'])->name('cetakpdf.hasil');
+    // Route::get('/cetak-excel', [ProsesController::class, 'exportExcel'])->name('exportExcel.hasil');
 
     Route::get('/setting-fp', [FpgrowthController::class, 'index'])->name('fp.index');
     Route::put('/setting-fp{id}', [FpgrowthController::class, 'update'])->name('fp.update');
@@ -56,13 +56,10 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['guest'])->get('login', [LoginController::class, 'showLoginForm']);
 
-
-
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 
 Route::get('/lupa-password', [UserController::class, 'index'])->name('password.index');
-
 Route::post('/lupa-password', [UserController::class, 'updatePassword'])->name('password.updatePassword');

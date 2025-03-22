@@ -12,26 +12,22 @@ use Str;
 
 class UserController extends Controller
 {
-     // Menampilkan form untuk lupa password
      public function index()
      {
          return view('backend.lupa-password'); 
      }
 
-      // Fungsi untuk memproses update password
       public function updatePassword(Request $request)
       {
-          // Validasi input
+
           $validated = $request->validate([
               'email' => 'required|email|exists:users,email',
               'password' => 'required|confirmed|min:8',
           ]);
-  
-          // Temukan pengguna berdasarkan email
+
           $user = User::where('email', $request->email)->first();
           
           if ($user) {
-              // Update password dengan password baru yang sudah di-hash
               $user->password = Hash::make($request->password);
               $user->save();
   

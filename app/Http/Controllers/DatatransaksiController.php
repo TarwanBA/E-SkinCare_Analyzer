@@ -13,12 +13,11 @@ class DatatransaksiController extends Controller
 {
     public function index()
     {
-        // Gunakan cache untuk menyimpan daftar transaksi selama 10 menit
-        $datapagi = Cache::remember('transaksi_pagination', now()->addMinutes(10), function () {
-            return DataTransaksi::paginate(10);
+        $datapagi = Cache::remember('transaksi_pagination', now()->addMinutes(1), function () {
+            return DataTransaksi::all();
         });
 
-        $datatransaksi = Cache::remember('transaksi_all', now()->addMinutes(10), function () {
+        $datatransaksi = Cache::remember('transaksi_all', now()->addMinutes(1), function () {
             return DataTransaksi::all();
         });
 
@@ -28,7 +27,7 @@ class DatatransaksiController extends Controller
     // Menampilkan detail transaksi
     public function show($id)
     {
-        // Cache untuk detail transaksi
+        
         $transaksi = Cache::remember('transaksi_detail_' . $id, now()->addMinutes(10), function () use ($id) {
             return DataTransaksi::findOrFail($id);
         });
@@ -36,7 +35,7 @@ class DatatransaksiController extends Controller
         return view('backend.data-transaksi.show', compact('transaksi'));
     }
 
-    // Menampilkan form tambah transaksi
+    // Menampilkan form
     public function create()
     {
         return view('backend.data-transaksi.create');
@@ -55,14 +54,14 @@ class DatatransaksiController extends Controller
             'nama_produk' => $request->nama_produk,
         ]);
 
-        // Hapus cache agar data terbaru bisa muncul
+        // Hapus cache
         Cache::forget('transaksi_pagination');
         Cache::forget('transaksi_all');
 
         return redirect()->route('data-transaksi.index')->with('success', 'Data transaksi berhasil ditambahkan.');
     }
 
-    // Menampilkan form edit transaksi
+    // Menampilkan form
     public function edit($id)
     {
         $transaksi = DataTransaksi::findOrFail($id);
@@ -83,7 +82,7 @@ class DatatransaksiController extends Controller
             'nama_produk' => $request->nama_produk,
         ]);
 
-        // Hapus cache transaksi agar data terbaru bisa diambil
+        // Hapus cache
         Cache::forget('transaksi_detail_' . $id);
         Cache::forget('transaksi_pagination');
         Cache::forget('transaksi_all');
@@ -97,7 +96,7 @@ class DatatransaksiController extends Controller
         $transaksi = DataTransaksi::findOrFail($id);
         $transaksi->delete();
 
-        // Hapus cache setelah penghapusan transaksi
+        // Hapus cache
         Cache::forget('transaksi_detail_' . $id);
         Cache::forget('transaksi_pagination');
         Cache::forget('transaksi_all');
@@ -105,9 +104,10 @@ class DatatransaksiController extends Controller
         return redirect()->route('data-transaksi.index')->with('success', 'Data transaksi berhasil dihapus.');
     }
 
+    // Upload File
     public function upload(Request $request)
     {
-        // Validasi file yang diunggah
+        // Validasi file
         $validated = $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
@@ -118,7 +118,7 @@ class DatatransaksiController extends Controller
         $rows = $sheet->toArray();
 
         foreach ($rows as $key => $row) {
-            if ($key === 0) continue; // Lewatkan baris header
+            if ($key === 0) continue; 
 
             $excelTimestamp = $row[0];
 
@@ -140,7 +140,7 @@ class DatatransaksiController extends Controller
             ]);
         }
 
-        // Hapus cache agar data baru terupdate di sistem
+        // Hapus cache
         Cache::forget('transaksi_pagination');
         Cache::forget('transaksi_all');
 

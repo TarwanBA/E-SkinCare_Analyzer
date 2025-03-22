@@ -2,6 +2,7 @@
 
 @section('dashboard')
 
+
 <div class="row">
     <div class="col-sm-12">
       <div class="home-tab">
@@ -13,9 +14,12 @@
           </ul>
           <div class="d-flex">
             <div class="btn-wrapper">
-                <a href="{{route('cetak.hasil')}}" class="btn btn-outline-dark align-items-center" target="_blank">
-                    <i class="mdi mdi-printer"></i> Cetak Data
+                <a href="{{route('cetakpdf.hasil')}}" class="btn btn-outline-dark align-items-center" target="_blank">
+                    <i class="mdi mdi-printer"></i> Cetak Data Pdf
                 </a>
+                {{-- <a href="{{route('exportExcel.hasil')}}" class="btn btn-outline-dark align-items-center" target="_blank">
+                    <i class="mdi mdi-printer"></i> Cetak Data Excel
+                </a> --}}
             </div>
         </div>            
         </div>
@@ -58,9 +62,8 @@
 
 
         <h4 class="card-title" data-aos="fade-up" data-aos-duration="4000">Hasil 1-Itemset memenuhi minimum support</h4>
-        <p data-aos="fade-up" data-aos-duration="4000"> Item-item dengan nilai support yang dimilikinya
-            dengan menetapkan minimum support sebesar 2% maka item-item yang memiliki nilai support
-            kurang dari 2% dihilangkan.</p>
+        <p data-aos="fade-up" data-aos-duration="4000"> Berikut item-item dengan nilai minimum support sebesar {{$FpSupport}}%, selebihnya item-item yang memiliki nilai support
+            kurang dari {{$FpSupport}}% otomatis dihilangkan sehingga menghasilkan data hasil 1 itemset sebagai berikut:</p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="4000">
           <table class="table">
             <thead>
@@ -80,19 +83,12 @@
                 </tr>
                 @endforeach
             </table>
-            
-            <!-- Tambahkan Pagination -->
-            <div class="d-flex justify-content-center">
-                {{ $itemsetone->links('pagination::bootstrap-4') }}
-            </div>    
         </div>
 
         <br><br>
 
         <h4 class="card-title" data-aos="fade-up" data-aos-duration="5000">Daftar produk Calon 2-Itemset</h4>
-        <p data-aos="fade-up" data-aos-duration="5000"> Pembentukan pola kombinasi 2-itemset dibentuk dari item-item produk yang memenu
-            memenuhi minimum support yaitu dengan cara mengkombinasikan semua item kedalam
-            pola kombinasi 2-Itemset kemudian hitung nilai supportnya  </p>
+        <p data-aos="fade-up" data-aos-duration="5000"> Berikut daftar pembentukan pola kombinasi 2-itemset dibentuk dari item-item produk yang telah memenuhi minimum support pada hasil 1 itemset.</p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="5000">
           <table class="table">
             <thead>
@@ -123,7 +119,8 @@
 
 
         <h4 class="card-title" data-aos="fade-up" data-aos-duration="6000">Hasil 2-Itemset Memenuhi Minimum Support</h4>
-        <p data-aos="fade-up" data-aos-duration="6000"> </p>
+        <p data-aos="fade-up" data-aos-duration="6000">Berikut item-item dengan nilai minimum support sebesar {{$FpSupport}}%, selebihnya item-item yang memiliki nilai support
+            kurang dari {{$FpSupport}}% otomatis dihilangkan sehingga menghasilkan data hasil pola kombinasi 2 itemset sebagai berikut:</p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="6000">
           <table class="table">
             <thead>
@@ -143,11 +140,6 @@
                 </tr>
                 @endforeach
             </table>
-            
-            <!-- Tambahkan Pagination -->
-            <div class="d-flex justify-content-center">
-                {{ $twoItemSetsPaginated->links('pagination::bootstrap-4') }}
-            </div>    
         </div>
 
 
@@ -155,8 +147,12 @@
 
 
         <h4 class="card-title" data-aos="fade-up" data-aos-duration="7000">Hasil Confidence</h4>
-        <p data-aos="fade-up" data-aos-duration="7000"> confidence dengan aturan minimum confidence 15%
-            ditentukan dari setiap kombinasi item </p>
+        <p data-aos="fade-up" data-aos-duration="7000" style="text-align: justify">
+            Confidence menggambarkan seberapa besar kemungkinan suatu item muncul jika item lain sudah ada dalam transaksi. 
+            Jika sebelumnya terdapat 1-itemset, confidence dihitung berdasarkan hubungan satu item dengan item lain, 
+            sedangkan dengan 2-itemset, confidence mempertimbangkan kombinasi dua item sebelumnya. 
+            Nilai confidence yang tinggi menunjukkan bahwa item dalam konsekuen sangat mungkin terjadi jika antecedent sudah ada, 
+            Beriktu merupakan hasil Confidance yg didapatkan. </p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="7000">
           <table class="table">
             <thead>
@@ -180,21 +176,13 @@
                 </tr>
                 @endforeach
             </tbody>
-            </table>
-            
-            <!-- Tambahkan Pagination -->
-            {{-- <div class="d-flex justify-content-center">
-                {{ $filteredTwoItemsetWithConfidence->links('pagination::bootstrap-4') }}
-            </div> --}}
-            
+            </table>            
         </div>
 
-        <br><br>
-
-
-        <h4 class="card-title" data-aos="fade-up" data-aos-duration="8000">Aturan Hasil Memenuhi Minimum Confidence</h4>
-        <p data-aos="fade-up" data-aos-duration="8000"> Dengan nilai confidence yang didapat, kemudian dihilangkan nilai confidence yang
-            tidak memenuhi ketentuan kurang dari confidence 15% yaitu sebagai berikut: </p>
+        <br><br> 
+        <h4 class="card-title" data-aos="fade-up" data-aos-duration="8000">Aturan Hasil Memenuhi Minimum Confidence {{$FpConfidance}}% </h4>
+        <p style="text-align: justify"> Dengan nilai confidence yang didapat, kemudian dihilangkan nilai confidence yang
+            tidak memenuhi ketentuan kurang dari confidence {{$FpConfidance}}% yaitu sebagai berikut: </p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="8000">
           <table class="table">
             <thead>
@@ -218,14 +206,7 @@
                 </tr>
                 @endforeach
             </tbody>
-            </table>
-            
-            <!-- Tambahkan Pagination -->
-            {{-- <div class="d-flex justify-content-center">
-                {{ $filteredTwoItemsetWithConfidencemin->links('pagination::bootstrap-4') }}
-            </div> --}}
-            
-
+            </table>           
         </div>
 
         <br><br>
@@ -233,8 +214,8 @@
 
         <h4 class="card-title" data-aos="fade-up" data-aos-duration="9000">Aturan Asosiasi yang Terbentuk</h4>
         <p data-aos="fade-up" data-aos-duration="9000"> Pola kombinasi 2-Itemset,
-            dengan ketentuan minimum support 2% dan minimum confidence 15% maka aturan
-            asosiasi yang terbentuk </p>
+            dengan ketentuan minimum support {{$FpSupport}}% dan minimum confidence {{$FpConfidance}}% maka aturan
+            asosiasi yang terbentuk sebagai berikut: </p>
         <div class="table-responsive" data-aos="fade-up" data-aos-duration="9000">
           <table class="table">
             <thead>
@@ -250,11 +231,10 @@
                 @php 
                     $no = 1; 
                     $sortedRules = collect($associationRules)->sortByDesc('support')->values();
-                    // Ambil nilai support & confidence tertinggi
+
                     $highestSupport = $sortedRules->max('support');
                     $highestConfidence = $sortedRules->max('confidence');
 
-                    // Ambil aturan yang memiliki support tertinggi
                     $topSupportRule = $sortedRules->firstWhere('support', $highestSupport);
                     $topConfidenceRule = $sortedRules->firstWhere('confidence', $highestConfidence);
                 @endphp
@@ -270,37 +250,37 @@
             </tbody>
             </table>
             <div class="mt-4 p-3 bg-light border rounded">
-                <h5>Berdasarkan Hasil Analisis</h5>
-                <p>
-                    Produk Skincare dengan nilai <strong>Support</strong> tertinggi sebesar ({{ $highestSupport }}), dari 
-                    pasangan produk yang sering dibeli adalah produk **{{ $topSupportRule['pair'] }}**. 
-                </p>
-                <p>
-                    Diikuti dengan nilai <strong>Confidence</strong> tertinggi ({{ $highestConfidence }}) adalah 
-                    pasangan **{{ $topConfidenceRule['pair'] }}**. Ini juga menunjukkan bahwa kombinasi ini sering muncul atau paling banyak dibeli berdarakan data transaksi.
+                <div class="mt p-3 bg-light border rounded" style="text-align: justify; line-height: 1.6;">  
+                    <h5 class="mb-3"><strong>Berdasarkan aturan asosiasi yang terbentuk, dapat disimpulkan bahwa:</strong></h5>                      
+                    <ol class="ps-3">
+                        @foreach($sortedRules as $index => $rule)
+                            @php
+                                $data_item = explode(', ', $rule['pair']);
+                            @endphp
+                
+                            <li class="mb-3">
+                                Pasangan produk <strong>{{ $rule['pair'] }}</strong> memiliki nilai 
+                                <strong>Support</strong> sebesar {{ $rule['support'] }} dan 
+                                <strong>Confidence</strong> sebesar {{ $rule['confidence'] }}.
+                                <br>
+                                Jika pelanggan membeli <strong>{{ $data_item[0] }}</strong>, maka pelanggan juga akan membeli 
+                                <strong>{{ $data_item[1] }}</strong>.
+                            </li>
+                        @endforeach
+                    </ol>
+                </div>
+                <br>
+                <p style="text-align: justify;">
+                    Ini juga menunjukkan bahwa kombinasi produk ini sering muncul dalam transaksi dan memiliki keterkaitan yang kuat. Dengan nilai <strong>support</strong> dan <strong>confidence</strong> yang tinggi, produk-produk ini cenderung dibeli bersamaan, sehingga dapat dijadikan rekomendasi untuk strategi pemasaran, promosi bundling, atau penataan produk yang lebih efektif.
                 </p>
 
-                <div class="mt-4 p-3 bg-light border rounded">
-                    <h5>Berdasarkan aturan asosiasi yang terbentuk dapat disimpulkan bahwa:</h5>
-                
-                    @foreach($sortedRules as $index => $rule)
-                        <p>
-                            <strong>{{ $index + 1 }}.</strong> 
-                            Pasangan **{{ $rule['pair'] }}** memiliki nilai 
-                            <strong>Support</strong> sebesar {{ $rule['support'] }} dan 
-                            <strong>Confidence</strong> sebesar {{ $rule['confidence'] }}.
-                        </p>
-                    @endforeach
-                    <br>
-                  
-                </div>
+               
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Bootstrap -->
-<!-- Modal Bootstrap dengan Ukuran Lebar -->
+
 <div class="modal fade" id="welcomeModal" tabindex="-1" role="dialog" aria-labelledby="welcomeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document"> <!-- Gunakan modal-lg untuk ukuran besar -->
         <div class="modal-content">
@@ -311,32 +291,29 @@
                 </button>
             </div>
             <div class="modal-body">
-                <h5>Berdasarkan aturan asosiasi yang terbentuk dapat disimpulkan bahwa:</h5>
-               
-                @foreach($sortedRules as $index => $rule)
-                    <p>
-                        <strong>{{ $index + 1 }}.</strong> 
-                        Pasangan produk "<strong>{{ $rule['pair'] }}</strong>" memiliki nilai 
-                        <strong>Support</strong> sebesar {{ $rule['support'] }} dan 
-                        <strong>Confidence</strong> sebesar {{ $rule['confidence'] }}.
-                    </p>
-                @endforeach
-                <div class="mt-4 p-3 bg-light border rounded">
-                    <p>
-                        Dari hasil perhitungan, kombinasi produk skincare di atas merupakan produk yang memenuhi nilai minimum 
-                        <strong>support</strong> & <strong>confidence</strong>. Ini menunjukkan bahwa pasangan produk ini sering muncul dalam transaksi pelanggan. 
-                        Semakin tinggi nilai support dan confidence, semakin sering kombinasi produk ini ditemukan dalam data transaksi penjualan produk skincare.
-                    </p>
-                    <p>
-                        Hal ini mengindikasikan bahwa produk-produk skincare dalam kombinasi ini memiliki keterkaitan yang kuat dan cenderung dibeli secara bersamaan. 
-                        Dengan kata lain, pelanggan yang membeli salah satu produk dalam pasangan ini kemungkinan besar juga membeli produk lainnya.
-                    </p>
-                    <p>
-                        Informasi ini dapat dimanfaatkan untuk meningkatkan strategi pemasaran, seperti dengan menawarkan diskon bundling 
-                        atau menampilkan rekomendasi produk yang lebih relevan bagi pelanggan. Selain itu, analisis ini juga berguna untuk 
-                        mengoptimalkan stok barang, memastikan ketersediaan produk yang sering dibeli bersamaan, serta meningkatkan pengalaman belanja pelanggan.
-                    </p>
+                <div class="mt p-3 bg-light border rounded" style="text-align: justify; line-height: 1.6;">  
+                    <h5 class="mb-3"><strong>Berdasarkan aturan asosiasi yang terbentuk, dapat disimpulkan bahwa:</strong></h5>                      
+                    <ol class="ps-3">
+                        @foreach($sortedRules as $index => $rule)
+                            @php
+                                $data_item = explode(', ', $rule['pair']);
+                            @endphp
+                
+                            <li class="mb-3">
+                                Pasangan produk <strong>{{ $rule['pair'] }}</strong> memiliki nilai 
+                                <strong>Support</strong> sebesar {{ $rule['support'] }} dan 
+                                <strong>Confidence</strong> sebesar {{ $rule['confidence'] }}.
+                                <br>
+                                Jika pelanggan membeli <strong>{{ $data_item[0] }}</strong>, maka pelanggan juga akan membeli 
+                                <strong>{{ $data_item[1] }}</strong>.
+                            </li>
+                        @endforeach
+                    </ol>
                 </div>
+                <br>
+                <p style="text-align: justify;">
+                    Ini juga menunjukkan bahwa kombinasi produk ini sering muncul dalam transaksi dan memiliki keterkaitan yang kuat. Dengan nilai <strong>support</strong> dan <strong>confidence</strong> yang tinggi, produk-produk ini cenderung dibeli bersamaan, sehingga dapat dijadikan rekomendasi untuk strategi pemasaran, promosi bundling, atau penataan produk yang lebih efektif.
+                </p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -347,7 +324,7 @@
     </div>
 </div>
 
-<!-- Script untuk Menampilkan Modal Saat Halaman Dimuat -->
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         var myModal = new bootstrap.Modal(document.getElementById('welcomeModal'));

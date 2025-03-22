@@ -1,6 +1,7 @@
 @extends('layout.be')
 
 @section('dashboard')
+@include('komponen.pesan')
 
       <div class="row " data-aos="zoom-in" data-aos-duration="5500">
         <div class="col-sm-12">
